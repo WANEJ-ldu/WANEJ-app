@@ -4,7 +4,8 @@ const User = require('./User');
 
 const Session = sequelize.define('Session', {
     id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     expiresAt: {

@@ -10,7 +10,7 @@ const Team = sequelize.define('Team', {
     }
 }, {
     timestamps: true,
-    tableName: 'teams'
+    tableName: 'Teams'
 });
 
 Team.associate = (models) => {

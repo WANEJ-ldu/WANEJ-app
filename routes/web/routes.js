@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// Route test : retourner la vue test
-router.get('/test', (req, res) => {
-    res.render('test');
+router.get('/', (req, res) => {
+    res.render('index');
 });
 
 module.exports = router;

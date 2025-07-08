@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Semaine du Numérique</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+            margin: 0;
+            padding: 0;
+            color: #22223b;
+        }
+        header {
+            background: #3a86ff;
+            color: #fff;
+            padding: -1rem 1rem 1rem 1rem;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 4px 12px rgba(58,134,255,0.1);
+        }
+        header img {
+            width: 80px;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            margin: 0.2em 0 0.5em 0;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+        }
+        h2 {
+            color: #3a86ff;
+            margin-top: 2em;
+        }
+        .intro {
+            max-width: 700px;
+            margin: 2em auto 1em auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(58,134,255,0.07);
+            padding: 2em;
+            text-align: center;
+        }
+        .defis {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2em;
+            margin: 2em 0;
+        }
+        .defi-card {
+            background: #f8fafc;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(58,134,255,0.08);
+            width: 320px;
+            padding: 1.5em;
+            text-align: left;
+            transition: transform 0.2s;
+            border: 2px solid #e0e7ff;
+        }
+        .defi-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            border-color: #3a86ff;
+        }
+        .defi-card img {
+            width: 60px;
+            float: right;
+            margin-left: 1em;
+        }
+        .defi-title {
+            font-size: 1.3em;
+            color: #22223b;
+            margin-bottom: 0.5em;
+        }
+        .defi-desc {
+            font-size: 1em;
+            color: #444;
+        }
+        .team {
+            background: #e0e7ff;
+            border-radius: 18px;
+            max-width: 700px;
+            margin: 2em auto;
+            padding: 1.5em;
+            text-align: center;
+        }
+        .team img {
+            width: 100px;
+            border-radius: 50%;
+            margin: 0 10px;
+            border: 2px solid #613aff;
+        }
+        footer {
+            text-align: center;
+            padding: 1em;
+            color: #888;
+            margin-top: 2em;
+        }
+        @media (max-width: 900px) {
+            .defis {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:0.5em;">
+        <img src="https://cdn-icons-png.flaticon.com/512/2721/2721297.png" alt="Logo WANEJ" style="width:100px;box-shadow:0 4px 16px #3a86ff33;border-radius:50%;background:#fff;padding:10px;">
+        <h1 style="margin:0.2em 0 0.1em 0;font-size:3em;letter-spacing:3px;font-family:'Segoe UI',Arial,sans-serif;">
+            <span style="color:#fff;text-shadow:2px 2px 8px #3a86ff99;">WANEJ</span>
+        </h1>
+        <h2 style="margin:0 0 0.5em 0;font-size:1.7em;color:#ffd60a;text-shadow:1px 1px 6px #3a86ff88;">
+            Semaine du Numérique
+        </h2>
+        <p style="font-size:1.2em;max-width:600px;margin:0 auto 0.5em auto;line-height:1.5;color:#e0e7ff;">
+            Bienvenue sur la page officielle de notre groupe pour la Semaine du Numérique !<br>
+            <span style="font-size:1.1em;">Découverte, entraide et bonne humeur au rendez-vous 😊</span>
+        </p>
+        <div style="display:flex;gap:1.5em;justify-content:center;margin-top:1em;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Découverte" style="width:48px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="Souris" style="width:48px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Quiz" style="width:48px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Internet" style="width:48px;">
+        </div>
+    </div>
+</header>
+
+    <section class="intro">
+        <h2>Qui sommes-nous ?</h2>
+        <p>
+            <b>WANEJ</b> est un groupe d'étudiants passionnés par le numérique, l'entraide et la découverte.<br>
+            À l'occasion de la <b>Semaine du Numérique</b>, nous avons conçu des <b>défis</b> et <b>activités</b> ludiques pour tous, même si vous n'avez jamais touché un ordinateur !
+        </p>
+        <img src="https://cdn.pixabay.com/photo/2017/01/31/13/14/computer-2025792_1280.png" alt="Découverte informatique" style="width:120px;margin-top:1em;">
+    </section>
+
+    <section>
+        <h2 style="text-align:center;">Nos Défis & Activités</h2>
+        <div class="defis">
+            <div class="defi-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="Défi Souris">
+                <div class="defi-title">Défi Souris Magique 🖱️</div>
+                <div class="defi-desc">
+                    Apprenez à manier la souris et le clavier à travers un parcours interactif : cliquer, glisser, double-cliquer...<br>
+                    <b>Objectif :</b> Réaliser un dessin simple en utilisant uniquement la souris !
+                </div>
+            </div>
+            <div class="defi-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Défi Internet">
+                <div class="defi-title">Premiers Pas sur Internet 🌐</div>
+                <div class="defi-desc">
+                    Découvrez comment naviguer sur Internet en toute sécurité.<br>
+                    <b>Objectif :</b> Trouver une information simple sur le web et envoyer un email.
+                </div>
+            </div>
+            <div class="defi-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Défi Sécurité">
+                <div class="defi-title">Défi Sécurité Numérique 🔒</div>
+                <div class="defi-desc">
+                    Apprenez à créer un mot de passe solide et à reconnaître les pièges courants.<br>
+                    <b>Objectif :</b> Gagner le badge "Cyber-détective" en évitant les faux emails !
+                </div>
+            </div>
+            <div class="defi-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/167/167707.png" alt="Défi Création">
+                <div class="defi-title">!!!!!Crée ta Première Page Web 💻</div>
+                <div class="defi-desc">
+                    Initiez-vous au HTML en créant une mini-page personnalisée.<br>
+                    <b>Objectif :</b> Créé votre première page web en HTML !
+                </div>
+            </div>
+            <div class="defi-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Défi Quiz">
+                <div class="defi-title">Quiz Numérique 🎲</div>
+                <div class="defi-desc">
+                    Testez vos connaissances avec notre quiz interactif.<br>
+                    <b>Objectif :</b> Répondre à 10 questions et remporter un lot surprise !
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="team">
+        <h2>Notre équipe</h2>
+        <div>
+            <img src="https://media.licdn.com/dms/image/v2/D4E03AQH8huB6lD8yDQ/profile-displayphoto-shrink_400_400/B4EZaEaj3cH0Ag-/0/1745978279436?e=1757548800&v=beta&t=aisfNc8-TpnJOCh8aSRKgFz2oto0sfEumZPJTwq33ug" alt="Alexis">
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQHl5ZPICWx9JA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1711541616006?e=1757548800&v=beta&t=1cuR5uuSQGEp0KeSX_LH43HWYIOSMXK6Oa_uppZ4CK4" alt="Weimin">
+            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Elodie">
+            <img src="https://media.licdn.com/dms/image/v2/D4D03AQGkYEwaddkeqA/profile-displayphoto-shrink_100_100/B4DZaEhkZ3G8AU-/0/1745980114995?e=1757548800&v=beta&t=g32nfSLf7WvFWNp_tiY0VvbCkE-XJoAmHUvOGC1koWo" alt="Nathan">
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQGBf0-yk-vjVg/profile-displayphoto-shrink_400_400/B56ZaESQAlGUAk-/0/1745976100183?e=1757548800&v=beta&t=ituqN1LWkRmoqVhbHY1pPkbfhDbqr1OMvVXGYlTvdqw" alt="Jean">
+        </div>
+        <p>
+            <b>Alexis  -  Weimin  -   Elodie   -     Nathan   -   Jean</b><br>
+            Étudiants en BTS SIO, motivés à rendre le numérique accessible à tous !
+        </p>
+    </section>
+
+    <footer>
+        © 2025 WANEJ - Semaine du Numérique | Illustrations par Flaticon & Pixabay
+    </footer>
+</body>
+</html>

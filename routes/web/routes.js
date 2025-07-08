@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Route principale
-router.get('/', (req, res) => {
-    res.sendFile('index.html', { root: './public' });
+// Route test : retourner la vue test
+router.get('/test', (req, res) => {
+    res.render('test');
 });
 
 module.exports = router;

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { authenticate } = require('../../../middleware/authenticate');
-const { User } = require('../../../models');
+const { User, Role } = require('../../../models');
 
 // Register
 router.post('/register', [
@@ -24,23 +24,16 @@ async (req, res) => {
         if (username) {
             existingUser = await User.findOne({ where: { username } });
         }
-        if (!existingUser && email) {
-            existingUser = await User.findOne({ where: { email } });
-        }
 
         if (existingUser) {
             if (existingUser.username === username) {
                 return res.status(400).json({ error: "Username already in use" });
             }
-            if (existingUser.email === email) {
-                return res.status(400).json({ error: "Email already in use" });
-            }
         }
 
-        const generatedId = generateSnowflake();
         await User.create({
-            id: generatedId,
             username,
+            roleId: 1
         });
         res.status(201).json({ message: "Account created successfully" });
     } catch (error) {

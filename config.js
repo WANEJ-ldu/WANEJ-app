@@ -14,9 +14,7 @@ if (!fs.existsSync(envPath) && !allowEnvLess) {
 
 // Check required environment variables
 const requiredEnvVars = [
-    'PORT',
-    'DATABASE',
-    'SEQUELIZE_LOGGING'
+    'PORT'
 ];
 
 const unsetEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);

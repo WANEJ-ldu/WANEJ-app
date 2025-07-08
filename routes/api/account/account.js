@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { authenticate } = require('../../../middleware/authenticate');
-const { User, Role } = require('../../../models');
+const { User, Role, Session } = require('../../../models');
+const { Op } = require('sequelize');
+const crypto = require('crypto');
+
 
 // Register
 router.post('/register', [
@@ -39,6 +42,50 @@ async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to create account" });
+    }
+});
+
+router.post('/login', [
+    body('username').notEmpty().withMessage('Username or email is required')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username } = req.body;
+
+    try {
+        const user = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username: username },
+                ]
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const authToken = crypto.randomBytes(64).toString('hex');
+        const createdAt = new Date();
+
+        await Session.create({
+            token: authToken,
+            userId: user.id,
+            createdAt,
+        });
+        
+        await user.update({
+            lastLoginAt: createdAt
+        });
+
+        res.json({ authToken });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to log in" });
     }
 });
 

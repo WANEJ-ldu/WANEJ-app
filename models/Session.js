@@ -8,10 +8,6 @@ const Session = sequelize.define('Session', {
         autoIncrement: true,
         primaryKey: true,
     },
-    expiresAt: {
-        type: DataTypes.DATE(3),
-        allowNull: false
-    },
     token: {
         type: DataTypes.STRING,
         allowNull: false

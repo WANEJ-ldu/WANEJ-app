@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="logo-small">
+            <h1>Dashboard WANEJ</h1>
+            <div class="user-info">
+                <span>Bienvenue, <%= user.username %></span>
+                <a href="/logout" class="logout-btn">Déconnexion</a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="profile-section">
+                <h2>Mon Profil</h2>
+                <div class="profile-card">
+                    <div class="avatar">
+                        <img src="https://placehold.co/80x80/3a86ff/fff?text=<%= user.username.charAt(0).toUpperCase() %>" alt="Avatar">
+                    </div>
+                    <div class="profile-info">
+                        <h3><%= user.username %></h3>
+                        <p>Membre depuis : <%= new Date(user.createdAt).toLocaleDateString('fr-FR') %></p>
+                        <% if (user.lastLoginAt) { %>
+                            <p>Dernière connexion : <%= new Date(user.lastLoginAt).toLocaleDateString('fr-FR') %></p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team-section">
+                <h2>Mon Équipe</h2>
+                <% if (user.team) { %>
+                    <div class="team-card">
+                        <div class="team-header">
+                            <h3><%= user.team.name %></h3>
+                            <span class="team-code">Code: <%= user.team.code %></span>
+                        </div>
+                        <% if (user.team.description) { %>
+                            <p class="team-description"><%= user.team.description %></p>
+                        <% } %>
+                        <div class="team-members">
+                            <h4>Membres (<%= user.team.members.length %>/<%= user.team.maxMembers || 5 %>)</h4>
+                            <ul>
+                                <% user.team.members.forEach(member => { %>
+                                    <li>
+                                        <img src="https://placehold.co/30x30/3a86ff/fff?text=<%= member.username.charAt(0).toUpperCase() %>" alt="Avatar">
+                                        <%= member.username %>
+                                        <% if (member.id === user.team.createdBy) { %>
+                                            <span class="creator-badge">Créateur</span>
+                                        <% } %>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                        <div class="team-actions">
+                            <% if (user.team.createdBy === user.id) { %>
+                                <button onclick="deleteTeam()" class="btn btn-danger">Supprimer l'équipe</button>
+                            <% } else { %>
+                                <button onclick="leaveTeam()" class="btn btn-warning">Quitter l'équipe</button>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="no-team">
+                        <p>Vous n'êtes membre d'aucune équipe.</p>
+                        <div class="team-actions">
+                            <a href="/team/create" class="btn btn-primary">Créer une équipe</a>
+                            <a href="/team/join" class="btn btn-secondary">Rejoindre une équipe</a>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="activities-section">
+                <h2>Activités Récentes</h2>
+                <div class="activity-card">
+                    <p>Bienvenue sur WANEJ ! Participez aux défis de la Semaine du Numérique.</p>
+                    <a href="/" class="btn btn-outline">Voir les défis</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function leaveTeam() {
+            if (confirm('Êtes-vous sûr de vouloir quitter cette équipe ?')) {
+                try {
+                    const response = await fetch('/api/team/leave', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (error) {
+                    alert('Erreur lors de la sortie de l\'équipe');
+                }
+            }
+        }
+
+        async function deleteTeam() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ? Cette action est irréversible.')) {
+                try {
+                    const response = await fetch('/api/team/leave', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (error) {
+                    alert('Erreur lors de la suppression de l\'équipe');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

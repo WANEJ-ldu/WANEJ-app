@@ -21,14 +21,18 @@ const User = sequelize.define('User', {
             key: 'id'
         }
     },
-    team: {
-        type: DataTypes.STRING,
+    teamId: {
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: 'teams',
-            key: 'name'
+            model: 'Teams',
+            key: 'id'
         }
     },
+    lastLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    }
 }, {
     timestamps: true
 });

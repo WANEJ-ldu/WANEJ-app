@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Rejoindre une équipe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="team-form-container">
+        <div class="team-form-box">
+            <div class="form-header">
+                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
+                <h1>Rejoindre une équipe</h1>
+                <p>Entrez le code de l'équipe que vous souhaitez rejoindre</p>
+            </div>
+            
+            <form class="team-form" id="joinTeamForm">
+                <div id="error-message" class="error-message" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="code">Code de l'équipe *</label>
+                    <input type="text" id="code" name="code" required maxlength="8" 
+                           placeholder="Ex: A1B2C3D4" style="text-transform: uppercase;">
+                    <small>Le code vous a été fourni par le créateur de l'équipe</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Rejoindre l'équipe</button>
+                
+                <div class="form-links">
+                    <a href="/dashboard">Retour au dashboard</a>
+                    <a href="/team/create">Créer une équipe</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Conversion automatique en majuscules
+        document.getElementById('code').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        document.getElementById('joinTeamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/team/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Vous avez rejoint l'équipe "${result.team.name}" avec succès !`);
+                    window.location.href = '/dashboard';
+                } else {
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = result.error || 'Erreur lors de la jointure à l\'équipe';
+                }
+            } catch (error) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Erreur de connexion';
+            }
+        });
+    </script>
+</body>
+</html>

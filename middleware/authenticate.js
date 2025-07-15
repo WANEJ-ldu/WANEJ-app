@@ -26,9 +26,19 @@ const verifyToken = async (authToken) => {
     return user;
 };
 
-// Middleware : Authenticate the user using the token from the request headers
+// Middleware : Authenticate the user using the token from the request headers or cookies
 const authenticate = async (req, res, next) => {
-    const authToken = req.headers.authorization;
+    let authToken = req.headers.authorization;
+    
+    // Si pas de token dans les headers, vérifier les cookies
+    if (!authToken && req.cookies.authToken) {
+        authToken = req.cookies.authToken;
+    }
+    
+    // Nettoyer le token si format Bearer
+    if (authToken && authToken.startsWith('Bearer ')) {
+        authToken = authToken.slice(7);
+    }
 
     try {
         const user = await verifyToken(authToken);

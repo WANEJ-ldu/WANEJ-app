@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Inscription</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
+                <h1>WANEJ</h1>
+                <h2>Inscription</h2>
+            </div>
+            
+            <form class="login-form" id="registerForm">
+                <div id="error-message" class="error-message" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input type="text" id="username" name="username" required>
+                    <small>Lettres, chiffres et underscores uniquement. Minuscules seulement.</small>
+                </div>
+                
+                <button type="submit" class="login-btn">S'inscrire</button>
+                
+                <div class="form-links">
+                    <a href="/">Retour à l'accueil</a>
+                    <a href="/login">Se connecter</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/api/account/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                    window.location.href = '/login';
+                } else {
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'block';
+                    if (result.errors) {
+                        errorDiv.textContent = result.errors.map(e => e.msg).join(', ');
+                    } else {
+                        errorDiv.textContent = result.error || 'Erreur lors de l\'inscription';
+                    }
+                }
+            } catch (error) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Erreur de connexion';
+            }
+        });
+    </script>
+</body>
+</html>

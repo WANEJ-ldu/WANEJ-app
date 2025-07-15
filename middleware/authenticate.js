@@ -12,9 +12,14 @@ const verifyToken = async (authToken) => {
         return null;
     }
 
+    // Vérifier si la session est expirée (24 heures)
     const now = new Date();
+    const sessionAge = now.getTime() - session.createdAt.getTime();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
 
-    if (session.expiresAt < now) {
+    if (sessionAge > maxAge) {
+        // Supprimer la session expirée
+        await session.destroy();
         return null;
     }
 

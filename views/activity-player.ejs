@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Activité</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="activity-player">
+        <header class="activity-header">
+            <div class="header-left">
+                <a href="/activities" class="btn-back">← Retour</a>
+                <h1 id="activityTitle">Chargement...</h1>
+            </div>
+            <div class="header-right">
+                <div class="progress-info">
+                    <span id="stepCounter">0/0</span>
+                    <span class="points-badge">🏆 <span id="currentPoints">0</span> pts</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="activity-content">
+            <div class="step-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div class="step-container" id="stepContainer">
+                <!-- Le contenu de l'étape sera chargé ici -->
+            </div>
+
+            <div class="activity-actions">
+                <button id="nextButton" class="btn btn-primary" onclick="nextStep()">
+                    Suivant
+                </button>
+                <button id="submitButton" class="btn btn-primary" onclick="submitAnswer()" style="display: none;">
+                    Valider
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Chargement de l'activité...</p>
+    </div>
+
+    <script>
+        let currentActivity = null;
+        let currentStepIndex = 0;
+        let totalSteps = 0;
+        let currentPoints = 0;
+
+        const activityId = window.location.pathname.split('/').pop();
+
+        async function loadActivity() {
+            try {
+                const response = await fetch(`/api/activities/${activityId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentActivity = data.activity;
+                    currentStepIndex = data.progress.currentStep;
+                    totalSteps = currentActivity.content.steps.length;
+                    currentPoints = data.progress.pointsEarned;
+                    
+                    document.getElementById('activityTitle').textContent = currentActivity.title;
+                    updateProgressDisplay();
+                    displayCurrentStep();
+                } else {
+                    showError(data.error || 'Erreur lors du chargement de l\'activité');
+                }
+            } catch (error) {
+                showError('Erreur de connexion');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        function updateProgressDisplay() {
+            const progress = (currentStepIndex / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('stepCounter').textContent = `${currentStepIndex + 1}/${totalSteps}`;
+            document.getElementById('currentPoints').textContent = currentPoints;
+        }
+
+        function displayCurrentStep() {
+            if (currentStepIndex >= totalSteps) {
+                showCompletionScreen();
+                return;
+            }
+
+            const step = currentActivity.content.steps[currentStepIndex];
+            const container = document.getElementById('stepContainer');
+            
+            container.innerHTML = '';
+            
+            switch (step.type) {
+                case 'lesson':
+                    displayLesson(step, container);
+                    break;
+                case 'multiple_choice':
+                    displayMultipleChoice(step, container);
+                    break;
+                case 'text_input':
+                    displayTextInput(step, container);
+                    break;
+                case 'multiple_input':
+                    displayMultipleInput(step, container);
+                    break;
+                case 'drag_drop':
+                    displayDragDrop(step, container);
+                    break;
+                default:
+                    container.innerHTML = '<p>Type d\'étape non supporté</p>';
+            }
+        }
+
+        function displayLesson(step, container) {
+            container.innerHTML = `
+                <div class="lesson-content">
+                    <h2>${step.title}</h2>
+                    <div class="lesson-text">${step.content.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            
+            document.getElementById('nextButton').style.display = 'block';
+            document.getElementById('submitButton').style.display = 'none';
+        }
+
+        function displayMultipleChoice(step, container) {
+            const optionsHtml = step.options.map((option, index) => `
+                <label class="option-label">
+                    <input type="radio" name="answer" value="${index}">
+                    <span class="option-text">${option}</span>
+                </label>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="question-content">
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
+                    <div class="options-container">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('submitButton').style.display = 'block';
+        }
+
+        function displayTextInput(step, container) {
+            container.innerHTML = `
+                <div class="question-content">
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
+                    <div class="input-container">
+                        <input type="text" id="textAnswer" placeholder="${step.placeholder || 'Votre réponse'}" class="text-input">
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('submitButton').style.display = 'block';
+        }
+
+        function displayMultipleInput(step, container) {
+            const inputsHtml = step.inputs.map((input, index) => `
+                <div class="input-group">
+                    <p>${input.text}</p>
+                    <input type="text" data-index="${index}" class="multiple-input" placeholder="Votre réponse">
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="question-content">
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
+                    <div class="inputs-container">
+                        ${inputsHtml}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('submitButton').style.display = 'block';
+        }
+
+        function displayDragDrop(step, container) {
+            const itemsHtml = step.items.map(item => `
+                <div class="drag-item" draggable="true" data-id="${item.id}">
+                    ${item.text}
+                </div>
+            `).join('');
+
+            const categoriesHtml = step.categories.map(category => `
+                <div class="drop-zone" data-category="${category}">
+                    <h4>${category}</h4>
+                    <div class="drop-area"></div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="question-content">
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
+                    <div class="drag-drop-container">
+                        <div class="items-container">
+                            ${itemsHtml}
+                        </div>
+                        <div class="categories-container">
+                            ${categoriesHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            initializeDragDrop();
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('submitButton').style.display = 'block';
+        }
+
+        function initializeDragDrop() {
+            const items = document.querySelectorAll('.drag-item');
+            const dropZones = document.querySelectorAll('.drop-area');
+
+            items.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.dataset.id);
+                });
+            });
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drag-over');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    
+                    const itemId = e.dataTransfer.getData('text/plain');
+                    const item = document.querySelector(`[data-id="${itemId}"]`);
+                    
+                    if (item) {
+                        zone.appendChild(item);
+                    }
+                });
+            });
+        }
+
+        async function submitAnswer() {
+            const step = currentActivity.content.steps[currentStepIndex];
+            let answer = null;
+
+            switch (step.type) {
+                case 'multiple_choice':
+                    const selectedOption = document.querySelector('input[name="answer"]:checked');
+                    if (!selectedOption) {
+                        alert('Veuillez sélectionner une réponse');
+                        return;
+                    }
+                    answer = parseInt(selectedOption.value);
+                    break;
+
+                case 'text_input':
+                    answer = document.getElementById('textAnswer').value;
+                    break;
+
+                case 'multiple_input':
+                    const inputs = document.querySelectorAll('.multiple-input');
+                    answer = Array.from(inputs).map(input => input.value);
+                    break;
+
+                case 'drag_drop':
+                    const dropZones = document.querySelectorAll('.drop-zone');
+                    answer = {};
+                    dropZones.forEach(zone => {
+                        const category = zone.dataset.category;
+                        const items = zone.querySelectorAll('.drag-item');
+                        items.forEach(item => {
+                            answer[item.dataset.id] = category;
+                        });
+                    });
+                    break;
+            }
+
+            try {
+                const response = await fetch(`/api/activities/${activityId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        step: currentStepIndex,
+                        answer: answer
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showFeedback(result);
+                } else {
+                    alert(result.error || 'Erreur lors de la soumission');
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+
+        function showFeedback(result) {
+            const container = document.getElementById('stepContainer');
+            
+            const feedbackHtml = `
+                <div class="feedback-container ${result.isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="feedback-header">
+                        <h3>${result.isCorrect ? '✅ Correct !' : '❌ Incorrect'}</h3>
+                        ${result.pointsEarned > 0 ? `<span class="points-earned">+${result.pointsEarned} pts</span>` : ''}
+                    </div>
+                    ${result.feedback ? `<p class="feedback-text">${result.feedback}</p>` : ''}
+                    <button class="btn btn-primary" onclick="proceedToNext(${result.nextStep}, ${result.isCompleted})">
+                        ${result.isCompleted ? 'Terminer' : 'Continuer'}
+                    </button>
+                </div>
+            `;
+            
+            container.innerHTML = feedbackHtml;
+            
+            if (result.pointsEarned > 0) {
+                currentPoints += result.pointsEarned;
+                updateProgressDisplay();
+            }
+        }
+
+        function proceedToNext(nextStep, isCompleted) {
+            if (isCompleted) {
+                showCompletionScreen();
+            } else {
+                currentStepIndex = nextStep;
+                updateProgressDisplay();
+                displayCurrentStep();
+            }
+        }
+
+        function nextStep() {
+            if (currentStepIndex < totalSteps - 1) {
+                currentStepIndex++;
+                updateProgressDisplay();
+                displayCurrentStep();
+            } else {
+                showCompletionScreen();
+            }
+        }
+
+        function showCompletionScreen() {
+            const container = document.getElementById('stepContainer');
+            container.innerHTML = `
+                <div class="completion-screen">
+                    <h2>🎉 Félicitations !</h2>
+                    <p>Vous avez terminé l'activité "${currentActivity.title}"</p>
+                    <div class="completion-stats">
+                        <div class="stat">
+                            <span class="stat-value">${currentPoints}</span>
+                            <span class="stat-label">Points gagnés</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">${totalSteps}</span>
+                            <span class="stat-label">Étapes terminées</span>
+                        </div>
+                    </div>
+                    <div class="completion-actions">
+                        <a href="/activities" class="btn btn-primary">Retour aux activités</a>
+                        <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('submitButton').style.display = 'none';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('stepContainer');
+            container.innerHTML = `
+                <div class="error-message">
+                    <h3>Erreur</h3>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
+                </div>
+            `;
+        }
+
+        // Charger l'activité au démarrage
+        loadActivity();
+    </script>
+</body>
+</html>

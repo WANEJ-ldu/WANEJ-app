@@ -32,6 +32,10 @@ const User = sequelize.define('User', {
     lastLoginAt: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    points: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     timestamps: true

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>WANEJ - Activités</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="activities-container">
+        <header class="activities-header">
+            <div class="header-content">
+                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="logo-small">
+                <h1>Activités WANEJ</h1>
+                <div class="user-info">
+                    <span class="points-badge">🏆 <%= user.points %> pts</span>
+                    <span>Bienvenue, <%= user.username %></span>
+                    <a href="/dashboard" class="btn-link">Dashboard</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="activities-content">
+            <div class="activities-grid" id="activitiesGrid">
+                <!-- Les activités seront chargées ici -->
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Chargement des activités...</p>
+    </div>
+
+    <script>
+        async function loadActivities() {
+            try {
+                const response = await fetch('/api/activities');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayActivities(data.activities);
+                } else {
+                    showError('Erreur lors du chargement des activités');
+                }
+            } catch (error) {
+                showError('Erreur de connexion');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        function displayActivities(activities) {
+            const grid = document.getElementById('activitiesGrid');
+            grid.innerHTML = '';
+
+            activities.forEach(activity => {
+                const card = createActivityCard(activity);
+                grid.appendChild(card);
+            });
+        }
+
+        function createActivityCard(activity) {
+            const card = document.createElement('div');
+            card.className = 'activity-card';
+            
+            const progressPercent = activity.progress.isCompleted ? 100 : 
+                (activity.progress.currentStep / (activity.content?.steps?.length || 1)) * 100;
+            
+            const categoryIcons = {
+                'souris': '🖱️',
+                'internet': '🌐',
+                'security': '🔒',
+                'html': '💻',
+                'quiz': '🎲'
+            };
+
+            const difficultyColors = {
+                'beginner': '#22c55e',
+                'intermediate': '#f59e0b',
+                'advanced': '#ef4444'
+            };
+
+            const difficultyLabels = {
+                'beginner': 'Débutant',
+                'intermediate': 'Intermédiaire',
+                'advanced': 'Avancé'
+            };
+
+            card.innerHTML = `
+                <div class="activity-icon">
+                    ${categoryIcons[activity.category] || '📚'}
+                </div>
+                <div class="activity-content">
+                    <h3>${activity.title}</h3>
+                    <p class="activity-description">${activity.description}</p>
+                    <div class="activity-meta">
+                        <span class="difficulty-badge" style="background-color: ${difficultyColors[activity.difficulty]}">
+                            ${difficultyLabels[activity.difficulty]}
+                        </span>
+                        <span class="points-info">🏆 ${activity.maxPoints} pts</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="progress-text">
+                        ${activity.progress.isCompleted ? 
+                            `✅ Terminé (${activity.progress.pointsEarned}/${activity.maxPoints} pts)` : 
+                            `Étape ${activity.progress.currentStep + 1}`
+                        }
+                    </div>
+                </div>
+                <div class="activity-actions">
+                    <button class="btn btn-primary" onclick="startActivity(${activity.id})">
+                        ${activity.progress.isCompleted ? 'Refaire' : 
+                          activity.progress.currentStep > 0 ? 'Continuer' : 'Commencer'}
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function startActivity(activityId) {
+            window.location.href = `/activities/${activityId}`;
+        }
+
+        function showError(message) {
+            const grid = document.getElementById('activitiesGrid');
+            grid.innerHTML = `
+                <div class="error-message">
+                    <h3>Erreur</h3>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
+                </div>
+            `;
+        }
+
+        // Charger les activités au démarrage
+        loadActivities();
+    </script>
+</body>
+</html>

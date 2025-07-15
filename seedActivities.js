@@ -4,22 +4,57 @@ const { Activity } = require('./models');
 
 async function seedActivities() {
     try {
-        // Lire le fichier JSON d'exemple
-        const activityPath = path.join(__dirname, 'data/activities/souris-basics.json');
-        const activityData = JSON.parse(fs.readFileSync(activityPath, 'utf8'));
 
-        // Créer ou mettre à jour l'activité
-        const [activity, created] = await Activity.findOrCreate({
-            where: { title: activityData.title },
-            defaults: {
-                title: activityData.title,
-                description: activityData.description,
-                category: activityData.category,
-                difficulty: activityData.difficulty,
-                content: activityData.content,
-                maxPoints: activityData.maxPoints,
-                order: 1
+        // Activité "Souris : les bases" directement dans le code
+        const sourisBasics = {
+            title: "Souris : les bases",
+            description: "Découvrir les bases de l'utilisation de la souris.",
+            category: "ordinateur",
+            difficulty: "beginner",
+            maxPoints: 20,
+            order: 1,
+            content: {
+                steps: [
+                    {
+                        type: "lesson",
+                        title: "Qu'est-ce qu'une souris ?",
+                        content: "La souris est un périphérique qui permet de déplacer un curseur à l'écran et d'interagir avec l'ordinateur.",
+                        points: 0
+                    },
+                    {
+                        type: "multiple_choice",
+                        title: "Quel bouton de la souris utilise-t-on le plus souvent ?",
+                        question: "Quel bouton de la souris utilise-t-on le plus souvent ?",
+                        options: [
+                            "Le bouton gauche",
+                            "Le bouton droit",
+                            "La molette"
+                        ],
+                        correctAnswer: 0,
+                        explanation: "Le bouton gauche sert à la plupart des actions (cliquer, sélectionner, etc.)",
+                        points: 10
+                    },
+                    {
+                        type: "multiple_choice",
+                        title: "À quoi sert la molette ?",
+                        question: "À quoi sert la molette ?",
+                        options: [
+                            "À faire défiler la page",
+                            "À éteindre l'ordinateur",
+                            "À ouvrir un menu secret"
+                        ],
+                        correctAnswer: 0,
+                        explanation: "La molette permet de faire défiler le contenu d'une page vers le haut ou le bas.",
+                        points: 10
+                    }
+                ]
             }
+        };
+
+        // Créer ou mettre à jour l'activité "Souris : les bases"
+        const [activity, created] = await Activity.findOrCreate({
+            where: { title: sourisBasics.title },
+            defaults: sourisBasics
         });
 
         if (created) {
@@ -31,43 +66,143 @@ async function seedActivities() {
         // Créer d'autres activités d'exemple
         const additionalActivities = [
             {
-                title: "Premiers pas sur Internet",
-                description: "Apprenez à naviguer sur Internet en toute sécurité",
-                category: "internet",
+                title: "Quiz HTML & CSS",
+                description: "Testez vos connaissances sur les bases du HTML et du CSS !",
+                category: "web",
                 difficulty: "beginner",
-                maxPoints: 30,
+                maxPoints: 90,
                 order: 2,
                 content: {
                     steps: [
                         {
-                            type: "lesson",
-                            title: "Qu'est-ce qu'Internet ?",
-                            content: "🌐 Internet est un réseau mondial d'ordinateurs connectés entre eux.\n\nIl permet de :\n• Consulter des sites web\n• Envoyer des emails\n• Regarder des vidéos\n• Communiquer avec d'autres personnes",
-                            points: 0
+                            type: "multiple_choice",
+                            title: "HTML, c’est pour faire…",
+                            question: "HTML, c’est pour faire…",
+                            options: [
+                                "Un gâteau au chocolat 🎂",
+                                "Une page web 🌐",
+                                "Un avion en papier ✈️"
+                            ],
+                            correctAnswer: 1,
+                            explanation: "Réponse : b) Une page web. Mais si tu as choisi a), on peut être amis.",
+                            points: 10
                         },
                         {
                             type: "multiple_choice",
-                            title: "Question 1",
-                            question: "Que signifie WWW ?",
+                            title: "La balise <p>, elle sert à…",
+                            question: "La balise <p>, elle sert à…",
                             options: [
-                                "World Wide Web",
-                                "World Wide Window",
-                                "World Web Way",
-                                "Wide World Web"
+                                "Allumer la lumière 💡",
+                                "Dessiner un panda 🐼",
+                                "Faire un paragraphe 📝"
                             ],
-                            correctAnswer: 0,
-                            explanation: "WWW signifie World Wide Web, le système de pages web interconnectées.",
-                            points: 15
+                            correctAnswer: 2,
+                            explanation: "Réponse : c) Faire un paragraphe. La balise <panda> n’existe pas… pour l’instant.",
+                            points: 10
                         },
                         {
-                            type: "text_input",
-                            title: "Question 2",
-                            question: "Quel est le nom du programme utilisé pour naviguer sur Internet ?",
-                            placeholder: "Tapez votre réponse",
-                            correctAnswers: ["navigateur", "browser", "navigateur web", "navigateur internet"],
-                            caseSensitive: false,
-                            explanation: "Un navigateur (ou browser en anglais) est le programme qui permet de consulter des sites web.",
-                            points: 15
+                            type: "multiple_choice",
+                            title: "Pour écrire 'Bonjour' en gros, j’utilise…",
+                            question: "Pour écrire 'Bonjour' en gros, j’utilise…",
+                            options: [
+                                "<h1>Bonjour</h1> 📢",
+                                "<gros>Bonjour</gros> 🐘",
+                                "<cri>Bonjour</cri> 📣"
+                            ],
+                            correctAnswer: 0,
+                            explanation: "Réponse : a) <h1>. Désolé, <cri> n’est pas encore une balise HTML (mais ça serait marrant).",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Comment faire un lien vers Google ?",
+                            question: "Comment faire un lien vers Google ?",
+                            options: [
+                                "<a href=\"https://google.com\">Aller sur Google</a> 🏄‍♂️",
+                                "<google>Clique ici</google> 🔍",
+                                "<lien>Google</lien> 🧶"
+                            ],
+                            correctAnswer: 0,
+                            explanation: "Réponse : a) La bonne balise est <a>. Non, Google n’a pas encore sa propre balise HTML (mais qui sait ?).",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Quelle balise montre une image de chat ?",
+                            question: "Quelle balise montre une image de chat ?",
+                            options: [
+                                "<img src=\"chat.jpg\"> 🐱",
+                                "<photo>chat</photo> 📸",
+                                "<emoji>🐱</emoji> 😺"
+                            ],
+                            correctAnswer: 0,
+                            explanation: "Réponse : a) <img>. Désolé, <emoji> ne fonctionne pas… pour le moment.",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Pour faire une liste à puces, j’utilise…",
+                            question: "Pour faire une liste à puces, j’utilise…",
+                            options: [
+                                "<liste> 🧾",
+                                "<ul> •",
+                                "<points>...</points> ⚫"
+                            ],
+                            correctAnswer: 1,
+                            explanation: "Réponse : b) <ul>. Non, <liste> n’existe pas (mais ça serait pratique).",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Comment écrire un commentaire invisible en HTML ?",
+                            question: "Comment écrire un commentaire invisible en HTML ?",
+                            options: [
+                                "<cache>Chut !</cache> 🤫",
+                                "<!-- Ceci est un secret --> 🙊",
+                                "// Ceci est un commentaire 🕵️"
+                            ],
+                            correctAnswer: 1,
+                            explanation: "Réponse : b) <!-- -->. Les autres, c’est du JavaScript ou… de la magie noire.",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "La balise <br> sert à…",
+                            question: "La balise <br> sert à…",
+                            options: [
+                                "Casser quelque chose 💥",
+                                "Faire un burger 🍔",
+                                "Aller à la ligne ↩️"
+                            ],
+                            correctAnswer: 2,
+                            explanation: "Réponse : c) Aller à la ligne. Mais si tu veux un burger, il faut utiliser <food>… ah non, ça n’existe pas.",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Quelle balise met le texte en gras ?",
+                            question: "Quelle balise met le texte en gras ?",
+                            options: [
+                                "<gras> 🏋️",
+                                "<strong> 💪",
+                                "<bold> ✨"
+                            ],
+                            correctAnswer: 1,
+                            explanation: "Réponse : b) <strong>. <gras> aurait été trop facile, non ?",
+                            points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Que signifie 'CSS' dans le contexte du développement web ?",
+                            question: "Que signifie 'CSS' dans le contexte du développement web ?",
+                            options: [
+                                "Counter-Strike: Source 🔫",
+                                "Café Sans Sucre ☕",
+                                "Feuilles de Style en Cascade (Cascading Style Sheets) 🎨"
+                            ],
+                            correctAnswer: 2,
+                            explanation: "Réponse : c) Feuilles de Style en Cascade. Les autres, c’est pour les pauses café ou le gaming !",
+                            points: 10
                         }
                     ]
                 }

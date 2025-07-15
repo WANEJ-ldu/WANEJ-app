@@ -2,41 +2,37 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>WANEJ - Connexion</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <div class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
-                <h1>WANEJ</h1>
-                <h2>Connexion</h2>
-            </div>
-            
-            <form class="login-form" action="/login" method="POST">
-                <% if (typeof error !== 'undefined') { %>
-                    <div class="error-message">
-                        <%= error %>
-                    </div>
-                <% } %>
-                
-                <div class="form-group">
-                    <label for="username">Nom d'utilisateur</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                
-
-                
-                <button type="submit" class="login-btn">Se connecter</button>
-                
-                <div class="form-links">
-                    <a href="/">Retour à l'accueil</a>
-                    <a href="/register">Créer un compte</a>
-                </div>
-            </form>
-        </div>
+        <h2>Connexion</h2>
+        <form id="loginForm">
+            <label for="username">Utilisateur :</label>
+            <input type="text" id="username" name="username" required>
+            <button type="submit">Se connecter</button>
+        </form>
+        <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const response = await fetch('/api/account/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username })
+            });
+            // Gérer la réponse ici (redirection, affichage d'un message, etc.)
+            if (response.ok) {
+                window.location.href = '/'; // Redirige vers la page d'accueil ou autre
+            } else {
+                alert('Erreur de connexion');
+            }
+        });
+        </script>
     </div>
 </body>
 </html>

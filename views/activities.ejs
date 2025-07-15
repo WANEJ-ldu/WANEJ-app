@@ -33,6 +33,13 @@
     </div>
 
     <script>
+        // Fonction pour échapper les balises HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         async function loadActivities() {
             try {
                 const response = await fetch('/api/activities');
@@ -92,8 +99,8 @@
                     ${categoryIcons[activity.category] || '📚'}
                 </div>
                 <div class="activity-content">
-                    <h3>${activity.title}</h3>
-                    <p class="activity-description">${activity.description}</p>
+                    <h3>${escapeHtml(activity.title)}</h3>
+                    <p class="activity-description">${escapeHtml(activity.description)}</p>
                     <div class="activity-meta">
                         <span class="difficulty-badge" style="background-color: ${difficultyColors[activity.difficulty]}">
                             ${difficultyLabels[activity.difficulty]}
@@ -130,7 +137,7 @@
             grid.innerHTML = `
                 <div class="error-message">
                     <h3>Erreur</h3>
-                    <p>${message}</p>
+                    <p>${escapeHtml(message)}</p>
                     <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
                 </div>
             `;

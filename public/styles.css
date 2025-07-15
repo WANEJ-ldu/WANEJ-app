@@ -1,24 +1,49 @@
-
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
     margin: 0;
     padding: 0;
     color: #22223b;
+    min-height: 100vh;
 }
+
+/* Header amélioré */
 header {
     background: #3a86ff;
     color: #fff;
-    padding: -1rem 1rem 1rem 1rem;
+    padding: 1rem;
     text-align: center;
     border-bottom-left-radius: 40px;
     border-bottom-right-radius: 40px;
     box-shadow: 0 4px 12px rgba(58,134,255,0.1);
+    position: relative;
 }
-header img {
+
+.login-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.login-button:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+}
+
+.wanej-logo {
     width: 80px;
     margin-bottom: 1rem;
 }
+
 h1 {
     margin: 0.2em 0 0.5em 0;
     font-size: 2.5em;
@@ -72,26 +97,236 @@ h2 {
     font-size: 1em;
     color: #444;
 }
+.header-intro {
+    max-width: 600px;
+    margin: 0 auto 1rem auto;
+}
+
+.header-intro p {
+    font-size: 1.2em;
+    line-height: 1.5;
+    color: #b8c1ec;
+    margin: 0.5em 0;
+}
+
+.header-subtitle {
+    font-size: 1.1em !important;
+    font-weight: 500;
+}
+
+.header-icons {
+    display: flex;
+    gap: 1.5em;
+    justify-content: center;
+    margin-top: 1.5em;
+}
+
+.header-icons img {
+    width: 48px;
+    height: 48px;
+    transition: transform 0.3s ease;
+}
+
+.header-icons img:hover {
+    transform: scale(1.1);
+}
+
 .team {
     background: #e0e7ff;
     border-radius: 18px;
     max-width: 700px;
     margin: 2em auto;
-    padding: 1.5em;
+    padding: 2em;
     text-align: center;
 }
-.team img {
-    width: 100px;
-    border-radius: 50%;
-    margin: 0 10px;
-    border: 2px solid #613aff;
+
+.team-photos {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 1.5em 0;
+    flex-wrap: wrap;
 }
+
+.team-photos img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid #3a86ff;
+    transition: transform 0.3s ease;
+    object-fit: cover;
+}
+
+.team-photos img:hover {
+    transform: scale(1.05);
+}
+
+.team-names {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 1em 0;
+    flex-wrap: wrap;
+}
+
+.team-names span {
+    font-weight: 600;
+    color: #3a86ff;
+    font-size: 1.1em;
+}
+
+.team p {
+    color: #666;
+    margin-top: 1em;
+    font-style: italic;
+}
+
 footer {
     text-align: center;
     padding: 1em;
     color: #888;
     margin-top: 2em;
 }
+
+/* Styles pour la page de login */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-box {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(58,134,255,0.15);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-header {
+    margin-bottom: 2rem;
+}
+
+.login-logo {
+    width: 60px;
+    margin-bottom: 1rem;
+}
+
+.login-header h1 {
+    color: #3a86ff;
+    margin: 0.5rem 0;
+    font-size: 2rem;
+}
+
+.login-header h2 {
+    color: #666;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.login-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #22223b;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e7ff;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3a86ff;
+}
+
+.login-btn {
+    width: 100%;
+    background: #3a86ff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.login-btn:hover {
+    background: #2d6cdf;
+    transform: translateY(-2px);
+}
+
+.form-links {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.form-links a {
+    color: #3a86ff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.form-links a:hover {
+    color: #2d6cdf;
+    text-decoration: underline;
+}
+
+/* Messages d'erreur */
+.error-message {
+    background: #fee;
+    color: #c33;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    border: 1px solid #fcc;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Amélioration responsive */
+@media (max-width: 768px) {
+    .login-button {
+        position: static;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+    
+    header {
+        padding: 1rem;
+    }
+    
+    .form-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
 @media (max-width: 900px) {
     .defis {
         flex-direction: column;

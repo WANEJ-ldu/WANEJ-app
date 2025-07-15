@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <title>WANEJ - Semaine du Numérique</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <header>
+        <a href="/login" class="login-button">Se connecter</a>
         <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="wanej-logo">
         <h1>WANEJ</h1>
         <h2>Semaine du Numérique</h2>
-        <p style="font-size:1.2em;max-width:600px;margin:0 auto 0.5em auto;line-height:1.5;color:#b8c1ec;">
-            Bienvenue sur la page officielle de notre groupe pour la Semaine du Numérique !<br>
-            <span style="font-size:1.1em;">Découverte, entraide et bonne humeur au rendez-vous 😊</span>
-        </p>
-        <div style="display:flex;gap:1.5em;justify-content:center;margin-top:1em;">
-            <img src="https://www.nist.gov/sites/default/files/styles/960_x_960_limit/public/images/2018/11/06/cyber-questions-blogfeaturedimage718x330-recovered.png?itok=1MKJUrdF" alt="Découverte" style="width:48px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="Souris" style="width:48px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Quiz" style="width:48px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Internet" style="width:48px;">
+        <div class="header-intro">
+            <p>Bienvenue sur la page officielle de notre groupe pour la Semaine du Numérique !</p>
+            <p class="header-subtitle">Découverte, entraide et bonne humeur au rendez-vous 😊</p>
         </div>
+        <!-- Icônes retirées pour un header plus épuré -->
     </header>
 
     <section class="intro">
@@ -60,10 +57,10 @@
             </div>
             <div class="defi-card">
                 <img src="https://cdn-icons-png.flaticon.com/512/167/167707.png" alt="Défi Création">
-                <div class="defi-title">!!!!!Crée ta Première Page Web 💻</div>
+                <div class="defi-title">Crée ta Première Page Web 💻</div>
                 <div class="defi-desc">
                     Initiez-vous au HTML en créant une mini-page personnalisée.<br>
-                    <b>Objectif :</b> Créé votre première page web en HTML !
+                    <b>Objectif :</b> Créer votre première page web en HTML !
                 </div>
             </div>
             <div class="defi-card">
@@ -79,17 +76,21 @@
 
     <section class="team">
         <h2>Notre équipe</h2>
-        <div>
-            <img src="https://media.licdn.com/dms/image/v2/D4E03AQH8huB6lD8yDQ/profile-displayphoto-shrink_400_400/B4EZaEaj3cH0Ag-/0/1745978279436?e=1757548800&v=beta&t=aisfNc8-TpnJOCh8aSRKgFz2oto0sfEumZPJTwq33ug" alt="Alexis">
-            <img src="https://media.licdn.com/dms/image/v2/D5603AQHl5ZPICWx9JA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1711541616006?e=1757548800&v=beta&t=1cuR5uuSQGEp0KeSX_LH43HWYIOSMXK6Oa_uppZ4CK4" alt="Weimin">
-            <img src="" alt="Elodie">
-            <img src="https://media.licdn.com/dms/image/v2/D4D03AQGkYEwaddkeqA/profile-displayphoto-shrink_100_100/B4DZaEhkZ3G8AU-/0/1745980114995?e=1757548800&v=beta&t=g32nfSLf7WvFWNp_tiY0VvbCkE-XJoAmHUvOGC1koWo" alt="Nathan">
-            <img src="https://media.licdn.com/dms/image/v2/D5603AQGBf0-yk-vjVg/profile-displayphoto-shrink_400_400/B56ZaESQAlGUAk-/0/1745976100183?e=1757548800&v=beta&t=ituqN1LWkRmoqVhbHY1pPkbfhDbqr1OMvVXGYlTvdqw" alt="Jean">
+        <div class="team-photos">
+            <img src="/images/Alexis.jpg" alt="Alexis">
+            <img src="/images/Weimin.jpg" alt="Weimin">
+            <img src="https://elodie.gimenez.xyz/img/profile.png" alt="Elodie">
+            <img src="/images/Nathan.jpg" alt="Nathan">
+            <img src="/images/Jeanbon.jpg" alt="Jean">
         </div>
-        <p>
-            <b>Alexis  -  Weimin  -   Elodie   -     Nathan   -   Jean</b><br>
-            Étudiants en BTS SIO, motivés à rendre le numérique accessible à tous !
-        </p>
+        <div class="team-names">
+            <span>Alexis</span>
+            <span>Weimin</span>
+            <span>Elodie</span>
+            <span>Nathan</span>
+            <span>Jean</span>
+        </div>
+        <p>Étudiants en BTS SIO, motivés à rendre le numérique accessible à tous !</p>
     </section>
 
     <footer>

@@ -26,6 +26,7 @@ const userToLocals = require('./middleware/userToLocals');
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Pour les formulaires
 app.use(cookieParser());
 
 app.use((req, res, next) => {

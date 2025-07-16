@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { authenticate } = require('../../../middleware/authenticate');
+const { requireGameSession } = require('../../../middleware/requireGameSession');
 const { User, Activity, UserActivity } = require('../../../models');
 const { Op } = require('sequelize');
 
 // Obtenir toutes les activités disponibles
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, requireGameSession, async (req, res) => {
     try {
         const activities = await Activity.findAll({
             where: { isActive: true },
@@ -48,7 +49,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // Obtenir une activité spécifique avec son contenu
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', authenticate, requireGameSession, async (req, res) => {
     try {
         const activity = await Activity.findByPk(req.params.id);
         if (!activity) {
@@ -93,7 +94,7 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 // Soumettre une réponse à une étape
-router.post('/:id/submit', authenticate, [
+router.post('/:id/submit', authenticate, requireGameSession, [
     body('step').isInt({ min: 0 }).withMessage('L\'étape doit être un nombre positif'),
     body('answer').optional()
 ], async (req, res) => {

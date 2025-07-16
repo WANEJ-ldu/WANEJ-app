@@ -78,14 +78,61 @@
                 <% } %>
             </div>
 
+            <div class="session-section">
+                <h2>Session d'Activité</h2>
+                <% if (user.gameSession) { %>
+                    <div class="session-card">
+                        <div class="session-header">
+                            <h3><%= user.gameSession.name %></h3>
+                            <span class="session-code">Code: <%= user.gameSession.code %></span>
+                        </div>
+                        <% if (user.gameSession.description) { %>
+                            <p class="session-description"><%= user.gameSession.description %></p>
+                        <% } %>
+                        <div class="session-details">
+                            <% if (user.gameSession.startDate) { %>
+                                <p><strong>Début:</strong> <%= new Date(user.gameSession.startDate).toLocaleDateString('fr-FR') %></p>
+                            <% } %>
+                            <% if (user.gameSession.endDate) { %>
+                                <p><strong>Fin:</strong> <%= new Date(user.gameSession.endDate).toLocaleDateString('fr-FR') %></p>
+                            <% } %>
+                            <p><strong>Statut:</strong> 
+                                <span class="session-status <%= user.gameSession.isActive ? 'active' : 'inactive' %>">
+                                    <%= user.gameSession.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="session-actions">
+                            <a href="/session" class="btn btn-secondary">Gérer la session</a>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="no-session">
+                        <p>Vous n'avez pas encore rejoint de session.</p>
+                        <p class="session-info">Pour accéder aux activités, vous devez d'abord rejoindre une session avec un code fourni par l'organisateur.</p>
+                        <div class="session-actions">
+                            <a href="/session" class="btn btn-primary">Rejoindre une session</a>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
             <div class="activities-section">
                 <h2>Activités et Défis</h2>
                 <div class="activity-card">
-                    <p>Participez aux activités interactives de la Semaine du Numérique et gagnez des points !</p>
-                    <div class="dashboard-activities-actions">
-                        <a href="/activities" class="btn btn-primary">Voir les activités</a>
-                        <a href="/" class="btn btn-outline">Page d'accueil</a>
-                    </div>
+                    <% if (user.gameSession) { %>
+                        <p>Participez aux activités interactives de la Semaine du Numérique et gagnez des points !</p>
+                        <div class="dashboard-activities-actions">
+                            <a href="/activities" class="btn btn-primary">Voir les activités</a>
+                            <a href="/" class="btn btn-outline">Page d'accueil</a>
+                        </div>
+                    <% } else { %>
+                        <p>Pour accéder aux activités, vous devez d'abord rejoindre une session.</p>
+                        <div class="dashboard-activities-actions">
+                            <a href="/session" class="btn btn-primary">Rejoindre une session</a>
+                            <a href="/" class="btn btn-outline">Page d'accueil</a>
+                        </div>
+                    <% } %>
                 </div>
             </div>
         </div>

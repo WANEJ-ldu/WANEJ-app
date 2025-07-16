@@ -86,19 +86,26 @@ router.post('/login', async (req, res) => {
 
 router.get('/dashboard', authenticateWeb, async (req, res) => {
     try {
-        const { Team } = require('../../models');
+        const { Team, GameSession } = require('../../models');
         
-        // Récupérer l'utilisateur avec son équipe
+        // Récupérer l'utilisateur avec son équipe et sa session
         const user = await User.findByPk(req.user.id, {
-            include: [{
-                model: Team,
-                as: 'team',
-                include: [{
-                    model: User,
-                    as: 'members',
-                    attributes: ['id', 'username', 'createdAt']
-                }]
-            }],
+            include: [
+                {
+                    model: Team,
+                    as: 'team',
+                    include: [{
+                        model: User,
+                        as: 'members',
+                        attributes: ['id', 'username', 'createdAt']
+                    }]
+                },
+                {
+                    model: GameSession,
+                    as: 'gameSession',
+                    attributes: ['id', 'code', 'name', 'description', 'startDate', 'endDate', 'isActive']
+                }
+            ],
             attributes: ['id', 'username', 'points', 'createdAt', 'lastLoginAt']
         });
         
@@ -115,6 +122,10 @@ router.get('/team/create', authenticateWeb, (req, res) => {
 
 router.get('/team/join', authenticateWeb, (req, res) => {
     res.render('team-join');
+});
+
+router.get('/session', authenticateWeb, (req, res) => {
+    res.render('session-join');
 });
 
 router.get('/logout', (req, res) => {

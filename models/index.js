@@ -4,6 +4,7 @@ const Session = require('./Session');
 const Team = require('./Team');
 const Activity = require('./Activity');
 const UserActivity = require('./UserActivity');
+const GameSession = require('./GameSession');
 
 // Associations User <-> Role
 User.belongsTo(Role, { foreignKey: 'roleId' });
@@ -17,6 +18,11 @@ User.belongsTo(Team, { foreignKey: 'teamId', as: 'team' });
 Team.hasMany(User, { foreignKey: 'teamId', as: 'members' });
 Team.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 
+// Associations User <-> GameSession
+User.belongsTo(GameSession, { foreignKey: 'gameSessionId', as: 'gameSession' });
+GameSession.hasMany(User, { foreignKey: 'gameSessionId', as: 'participants' });
+GameSession.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
 // Associations User <-> Activity
 User.hasMany(UserActivity, { foreignKey: 'userId' });
 UserActivity.belongsTo(User, { foreignKey: 'userId' });
@@ -29,5 +35,6 @@ module.exports = {
     Session,
     Team,
     Activity,
-    UserActivity
+    UserActivity,
+    GameSession
 };

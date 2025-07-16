@@ -5,6 +5,7 @@ const router = express.Router();
 const accountRoutes = require('./account/account');
 const teamRoutes = require('./team/team');
 const activityRoutes = require('./activities/activities');
+const gameSessionRoutes = require('./game-session/game-session');
 // Import config
 const config = require('../../config');
 
@@ -12,5 +13,6 @@ const config = require('../../config');
 router.use('/account', accountRoutes);
 router.use('/team', teamRoutes);
 router.use('/activities', activityRoutes);
+router.use('/game-session', gameSessionRoutes);
 
 module.exports = router;

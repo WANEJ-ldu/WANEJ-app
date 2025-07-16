@@ -36,6 +36,14 @@ const User = sequelize.define('User', {
     points: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    gameSessionId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'GameSessions',
+            key: 'id'
+        }
     }
 }, {
     timestamps: true

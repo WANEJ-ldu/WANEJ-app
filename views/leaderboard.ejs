@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - WANEJ</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="leaderboard-header">
+            <h1>🏆 Classement WANEJ</h1>
+            <div class="header-actions">
+                <a href="/dashboard" class="btn btn-outline">Retour au dashboard</a>
+            </div>
+        </header>
+
+        <div class="leaderboard-tabs">
+            <button class="tab-button active" data-tab="global">🌍 Classement Global</button>
+            <button class="tab-button" data-tab="current-session">🎮 Ma Session</button>
+            <button class="tab-button" data-tab="sessions">📊 Toutes les Sessions</button>
+        </div>
+
+        <div id="global-tab" class="tab-content active">
+            <div class="leaderboard-section">
+                <h2>Classement Global</h2>
+                <p class="subtitle">Tous les participants, toutes sessions confondues</p>
+                <div id="global-leaderboard" class="leaderboard-table">
+                    <div class="loading">Chargement...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="current-session-tab" class="tab-content">
+            <div class="leaderboard-section">
+                <h2>Classement de ma Session</h2>
+                <div id="current-session-info" class="session-info-banner"></div>
+                <div id="current-session-leaderboard" class="leaderboard-table">
+                    <div class="loading">Chargement...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sessions-tab" class="tab-content">
+            <div class="leaderboard-section">
+                <h2>Toutes les Sessions</h2>
+                <p class="subtitle">Explorez les classements des différentes sessions</p>
+                <div id="sessions-list" class="sessions-grid">
+                    <div class="loading">Chargement...</div>
+                </div>
+                <div id="selected-session-leaderboard" class="leaderboard-table" style="display: none;">
+                    <div class="session-header">
+                        <h3 id="selected-session-name"></h3>
+                        <button id="close-session-btn" class="btn btn-outline">Fermer</button>
+                    </div>
+                    <div id="selected-session-table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des onglets
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    
+                    // Désactiver tous les onglets
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Activer l'onglet sélectionné
+                    this.classList.add('active');
+                    document.getElementById(tabName + '-tab').classList.add('active');
+                    
+                    // Charger le contenu si nécessaire
+                    loadTabContent(tabName);
+                });
+            });
+
+            // Charger le contenu initial
+            loadTabContent('global');
+
+            function loadTabContent(tabName) {
+                switch(tabName) {
+                    case 'global':
+                        loadGlobalLeaderboard();
+                        break;
+                    case 'current-session':
+                        loadCurrentSessionLeaderboard();
+                        break;
+                    case 'sessions':
+                        loadSessionsList();
+                        break;
+                }
+            }
+
+            function loadGlobalLeaderboard() {
+                fetch('/api/leaderboard/global')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('global-leaderboard').innerHTML = 
+                                '<div class="error">Erreur: ' + data.error + '</div>';
+                        } else {
+                            displayLeaderboard(data.leaderboard, 'global-leaderboard');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        document.getElementById('global-leaderboard').innerHTML = 
+                            '<div class="error">Erreur lors du chargement du classement</div>';
+                    });
+            }
+
+            function loadCurrentSessionLeaderboard() {
+                fetch('/api/leaderboard/current-session')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('current-session-leaderboard').innerHTML = 
+                                '<div class="error">Erreur: ' + data.error + '</div>';
+                            document.getElementById('current-session-info').innerHTML = '';
+                        } else {
+                            displaySessionInfo(data.session, 'current-session-info');
+                            displayLeaderboard(data.leaderboard, 'current-session-leaderboard');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        document.getElementById('current-session-leaderboard').innerHTML = 
+                            '<div class="error">Erreur lors du chargement du classement</div>';
+                    });
+            }
+
+            function loadSessionsList() {
+                fetch('/api/leaderboard/sessions')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('sessions-list').innerHTML = 
+                                '<div class="error">Erreur: ' + data.error + '</div>';
+                        } else {
+                            displaySessionsList(data.sessions);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        document.getElementById('sessions-list').innerHTML = 
+                            '<div class="error">Erreur lors du chargement des sessions</div>';
+                    });
+            }
+
+            function displayLeaderboard(leaderboard, containerId) {
+                const container = document.getElementById(containerId);
+                
+                if (leaderboard.length === 0) {
+                    container.innerHTML = '<div class="no-data">Aucun participant trouvé</div>';
+                    return;
+                }
+
+                let html = '<table class="leaderboard-table-content">';
+                html += '<thead><tr><th>Rang</th><th>Joueur</th><th>Points</th>';
+                if (containerId === 'global-leaderboard') {
+                    html += '<th>Session</th>';
+                }
+                html += '</tr></thead><tbody>';
+
+                leaderboard.forEach(player => {
+                    const rowClass = player.isCurrentUser ? 'current-user' : '';
+                    html += `<tr class="${rowClass}">`;
+                    html += `<td class="rank">${getRankDisplay(player.rank)}</td>`;
+                    html += `<td class="username">${player.username}</td>`;
+                    html += `<td class="points">${player.points}</td>`;
+                    if (containerId === 'global-leaderboard') {
+                        html += `<td class="session">${player.sessionName}</td>`;
+                    }
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            function displaySessionInfo(session, containerId) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
+                    <div class="session-banner">
+                        <h3>${session.name}</h3>
+                        ${session.description ? `<p>${session.description}</p>` : ''}
+                    </div>
+                `;
+            }
+
+            function displaySessionsList(sessions) {
+                const container = document.getElementById('sessions-list');
+                
+                if (sessions.length === 0) {
+                    container.innerHTML = '<div class="no-data">Aucune session trouvée</div>';
+                    return;
+                }
+
+                let html = '';
+                sessions.forEach(session => {
+                    const statusClass = session.isActive ? 'active' : 'inactive';
+                    const userBadge = session.userParticipating ? '<span class="user-badge">Vous y participez</span>' : '';
+                    
+                    html += `
+                        <div class="session-card" data-session-id="${session.id}">
+                            <div class="session-card-header">
+                                <h4>${session.name}</h4>
+                                <span class="session-status ${statusClass}">${session.isActive ? 'Active' : 'Inactive'}</span>
+                            </div>
+                            <div class="session-card-body">
+                                ${session.description ? `<p class="session-description">${session.description}</p>` : ''}
+                                <div class="session-stats">
+                                    <span class="stat"><strong>${session.participantCount}</strong> participants</span>
+                                    <span class="stat"><strong>${session.topScore}</strong> meilleur score</span>
+                                    <span class="stat"><strong>${session.avgScore}</strong> score moyen</span>
+                                </div>
+                                ${userBadge}
+                            </div>
+                            <div class="session-card-footer">
+                                <button class="btn btn-primary" onclick="viewSessionLeaderboard(${session.id}, '${session.name}')">
+                                    Voir le classement
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }
+
+            window.viewSessionLeaderboard = function(sessionId, sessionName) {
+                fetch(`/api/leaderboard/session/${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Erreur: ' + data.error);
+                        } else {
+                            document.getElementById('selected-session-name').textContent = sessionName;
+                            displayLeaderboard(data.leaderboard, 'selected-session-table');
+                            document.getElementById('sessions-list').style.display = 'none';
+                            document.getElementById('selected-session-leaderboard').style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors du chargement du classement');
+                    });
+            };
+
+            document.getElementById('close-session-btn').addEventListener('click', function() {
+                document.getElementById('sessions-list').style.display = 'block';
+                document.getElementById('selected-session-leaderboard').style.display = 'none';
+            });
+
+            function getRankDisplay(rank) {
+                if (rank === 1) return '🥇';
+                if (rank === 2) return '🥈';
+                if (rank === 3) return '🥉';
+                return rank;
+            }
+        });
+    </script>
+</body>
+</html>

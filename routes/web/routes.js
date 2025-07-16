@@ -128,6 +128,10 @@ router.get('/session', authenticateWeb, (req, res) => {
     res.render('session-join');
 });
 
+router.get('/leaderboard', authenticateWeb, (req, res) => {
+    res.render('leaderboard');
+});
+
 router.get('/logout', (req, res) => {
     res.clearCookie('authToken');
     res.redirect('/');

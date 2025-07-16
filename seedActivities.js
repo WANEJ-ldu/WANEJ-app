@@ -203,6 +203,20 @@ async function seedActivities() {
                             correctAnswer: 2,
                             explanation: "Réponse : c) Feuilles de Style en Cascade. Les autres, c’est pour les pauses café ou le gaming !",
                             points: 10
+                        },
+                        {
+                            type: "multiple_choice",
+                            title: "Question Bonus : Comment évaluez-vous ce quiz ?",
+                            question: "Question Bonus : Comment évaluez-vous ce quiz ?",
+                            options: [
+                                "2",
+                                "5",
+                                "8",
+                                "10"
+                            ],
+                            correctAnswer: 3,
+                            explanation: "Merci pour votre retour ! (On espère que vous avez mis 10)",
+                            points: 10
                         }
                     ]
                 }

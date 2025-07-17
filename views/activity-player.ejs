@@ -8,18 +8,18 @@
 </head>
 <body>
     <div class="activity-player">
-        <header class="activity-header">
-            <div class="header-left">
-                <a href="/activities" class="btn-back">← Retour</a>
+        <%- include('partials/dashboard-header', { 
+            title: 'Activité WANEJ', 
+            showPoints: true,
+            backLink: { url: '/activities', text: '← Activités' }
+        }) %>
+        
+        <div class="activity-progress-header">
+            <div class="progress-info">
+                <span id="stepCounter">0/0</span>
                 <h1 id="activityTitle">Chargement...</h1>
             </div>
-            <div class="header-right">
-                <div class="progress-info">
-                    <span id="stepCounter">0/0</span>
-                    <span class="points-badge">🏆 <span id="currentPoints">0</span> pts</span>
-                </div>
-            </div>
-        </header>
+        </div>
 
         <div class="activity-content">
             <div class="step-progress">

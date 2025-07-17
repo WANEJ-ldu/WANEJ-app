@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+    <%- include('partials/dashboard-header', { 
+        title: 'Connexion WANEJ', 
+        showPoints: false,
+        backLink: { url: '/', text: '← Accueil' }
+    }) %>
+    
     <div class="login-container">
         <div class="login-box">
             <div class="login-header">

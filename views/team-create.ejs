@@ -7,13 +7,21 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div class="team-form-container">
-        <div class="team-form-box">
-            <div class="form-header">
-                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
-                <h1>Créer une équipe</h1>
-                <p>Formez votre équipe pour les défis WANEJ</p>
-            </div>
+    <div class="dashboard-container">
+        <%- include('partials/dashboard-header', { 
+            title: 'Créer une équipe', 
+            showPoints: false,
+            backLink: { url: '/dashboard', text: 'Retour au dashboard' }
+        }) %>
+        
+        <div class="dashboard-content">
+            <div class="team-form-container">
+                <div class="team-form-box">
+                    <div class="form-header">
+                        <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
+                        <h1>Créer une équipe</h1>
+                        <p>Formez votre équipe pour les défis WANEJ</p>
+                    </div>
             
             <form class="team-form" id="createTeamForm">
                 <div id="error-message" class="error-message" style="display: none;"></div>
@@ -73,5 +81,8 @@
             }
         });
     </script>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

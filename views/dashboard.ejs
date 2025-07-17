@@ -8,17 +8,15 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <header class="dashboard-header">
-            <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="logo-small">
-            <h1>Dashboard WANEJ</h1>
-            <div class="user-info">
-                <span>Bienvenue, <%= user.username %></span>
-                <a href="/logout" class="logout-btn">Déconnexion</a>
-            </div>
-        </header>
+        <%- include('partials/dashboard-header', { 
+            title: 'Dashboard WANEJ', 
+            showPoints: false,
+            backLink: null
+        }) %>
 
         <div class="dashboard-content">
-            <div class="profile-section">
+            <div class="dashboard-main">
+                <div class="profile-section">
                 <h2>Mon Profil</h2>
                 <div class="profile-card">
                     <div class="avatar">
@@ -135,6 +133,7 @@
                             <a href="/" class="btn btn-outline">Page d'accueil</a>
                         </div>
                     <% } %>
+                </div>
                 </div>
             </div>
         </div>

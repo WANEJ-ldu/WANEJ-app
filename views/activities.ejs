@@ -8,17 +8,11 @@
 </head>
 <body>
     <div class="activities-container">
-        <header class="activities-header">
-            <div class="header-content">
-                <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="logo-small">
-                <h1>Activités WANEJ</h1>
-                <div class="user-info">
-                    <span class="points-badge">🏆 <%= user.points %> pts</span>
-                    <span>Bienvenue, <%= user.username %></span>
-                    <a href="/dashboard" class="btn-link">Dashboard</a>
-                </div>
-            </div>
-        </header>
+        <%- include('partials/dashboard-header', { 
+            title: 'Activités WANEJ', 
+            showPoints: true,
+            backLink: { url: '/dashboard', text: 'Dashboard' }
+        }) %>
 
         <div class="activities-content">
             <div class="activities-grid" id="activitiesGrid">
@@ -60,6 +54,25 @@
         function displayActivities(activities) {
             const grid = document.getElementById('activitiesGrid');
             grid.innerHTML = '';
+
+            if (activities.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; display: flex; justify-content: center;">
+                        <div class="profile-section" style="max-width: 500px; text-align: center;">
+                            <div class="activity-icon" style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+                            <h3 style="color: #3a86ff; margin: 0 0 1rem 0;">Aucune activité disponible</h3>
+                            <p style="color: #666; margin: 0 0 1.5rem 0;">
+                                Il n'y a actuellement aucune activité disponible dans votre session.
+                            </p>
+                            <div>
+                                <button onclick="location.reload()" class="btn btn-primary" style="margin-right: 0.5rem;">🔄 Actualiser</button>
+                                <a href="/dashboard" class="btn btn-outline">Retour au dashboard</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
 
             activities.forEach(activity => {
                 const card = createActivityCard(activity);
@@ -135,10 +148,21 @@
         function showError(message) {
             const grid = document.getElementById('activitiesGrid');
             grid.innerHTML = `
-                <div class="error-message">
-                    <h3>Erreur</h3>
-                    <p>${escapeHtml(message)}</p>
-                    <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
+                <div style="grid-column: 1 / -1; display: flex; justify-content: center;">
+                    <div class="profile-section" style="max-width: 500px; text-align: center;">
+                        <div class="error-message" style="display: block; margin-bottom: 1.5rem;">
+                            <h3 style="color: #c33; margin: 0 0 1rem 0;">⚠️ Erreur de chargement</h3>
+                            <p style="margin: 0 0 1rem 0;">${escapeHtml(message)}</p>
+                            <button onclick="location.reload()" class="btn btn-primary">🔄 Réessayer</button>
+                        </div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            <p>Assurez-vous d'être connecté à une session pour accéder aux activités.</p>
+                            <div style="margin-top: 1rem;">
+                                <a href="/session" class="btn btn-secondary" style="margin-right: 0.5rem;">Rejoindre une session</a>
+                                <a href="/dashboard" class="btn btn-outline">Retour au dashboard</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         }

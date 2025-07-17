@@ -7,33 +7,58 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎮 Rejoindre une session</h1>
-            <p>Saisissez le code de session pour accéder aux activités</p>
-        </header>
+    <div class="dashboard-container">
+        <%- include('partials/dashboard-header', { 
+            title: 'Rejoindre une session', 
+            showPoints: false,
+            backLink: { url: '/dashboard', text: 'Retour au dashboard' }
+        }) %>
+        
+        <div class="dashboard-content">
+            <div class="team-form-container">
+                <div class="team-form-box">
+                    <div class="form-header">
+                        <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="login-logo">
+                        <h1>🎮 Rejoindre une session</h1>
+                        <p>Saisissez le code de session pour accéder aux activités</p>
+                    </div>
 
-        <div class="session-form">
-            <div class="form-group">
-                <label for="sessionCode">Code de session</label>
-                <input type="text" id="sessionCode" name="sessionCode" placeholder="Ex: DEMO2025" required>
+                    <form class="team-form" id="sessionForm">
+                        <div id="message" class="error-message" style="display: none;"></div>
+                        
+                        <div class="form-group" id="sessionCodeGroup">
+                            <label for="sessionCode">Code de session *</label>
+                            <input type="text" id="sessionCode" name="sessionCode" 
+                                   placeholder="Ex: DEMO2025" required maxlength="20"
+                                   style="text-transform: uppercase;">
+                            <small>Le code vous a été fourni par l'organisateur de la session</small>
+                        </div>
+                        
+                        <button type="submit" id="joinSessionBtn" class="btn btn-primary">
+                            Rejoindre la session
+                        </button>
+                        
+                        <div id="sessionInfo" class="session-info" style="display: none;">
+                            <h3>Session actuelle</h3>
+                            <div id="sessionDetails"></div>
+                            <button type="button" id="leaveSessionBtn" class="btn btn-secondary">
+                                Quitter la session
+                            </button>
+                        </div>
+                        
+                        <div class="form-links">
+                            <a href="/dashboard">Retour au dashboard</a>
+                            <a href="/activities">Voir les activités</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            
-            <button id="joinSessionBtn" class="btn btn-primary">Rejoindre la session</button>
-            
-            <div id="sessionInfo" class="session-info" style="display: none;">
-                <h3>Session actuelle</h3>
-                <div id="sessionDetails"></div>
-                <button id="leaveSessionBtn" class="btn btn-secondary">Quitter la session</button>
-            </div>
-        </div>
-
-        <div id="message" class="message" style="display: none;"></div>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const sessionForm = document.getElementById('sessionForm');
             const sessionCodeInput = document.getElementById('sessionCode');
+            const sessionCodeGroup = document.getElementById('sessionCodeGroup');
             const joinSessionBtn = document.getElementById('joinSessionBtn');
             const leaveSessionBtn = document.getElementById('leaveSessionBtn');
             const sessionInfo = document.getElementById('sessionInfo');
@@ -43,7 +68,9 @@
             // Vérifier si l'utilisateur a déjà une session
             checkCurrentSession();
 
-            joinSessionBtn.addEventListener('click', function() {
+            // Gérer la soumission du formulaire
+            sessionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 const code = sessionCodeInput.value.trim();
                 if (!code) {
                     showMessage('Veuillez saisir un code de session', 'error');
@@ -58,7 +85,7 @@
 
             function showMessage(text, type) {
                 message.textContent = text;
-                message.className = `message ${type}`;
+                message.className = type === 'success' ? 'success-message' : 'error-message';
                 message.style.display = 'block';
                 setTimeout(() => {
                     message.style.display = 'none';
@@ -80,14 +107,16 @@
 
             function displayCurrentSession(session) {
                 sessionDetails.innerHTML = `
-                    <p><strong>Nom:</strong> ${session.name}</p>
-                    <p><strong>Code:</strong> ${session.code}</p>
-                    <p><strong>Description:</strong> ${session.description || 'Aucune description'}</p>
-                    ${session.startDate ? `<p><strong>Début:</strong> ${new Date(session.startDate).toLocaleString()}</p>` : ''}
-                    ${session.endDate ? `<p><strong>Fin:</strong> ${new Date(session.endDate).toLocaleString()}</p>` : ''}
+                    <div class="session-details">
+                        <p><strong>Nom:</strong> ${session.name}</p>
+                        <p><strong>Code:</strong> ${session.code}</p>
+                        <p><strong>Description:</strong> ${session.description || 'Aucune description'}</p>
+                        ${session.startDate ? `<p><strong>Début:</strong> ${new Date(session.startDate).toLocaleDateString('fr-FR')}</p>` : ''}
+                        ${session.endDate ? `<p><strong>Fin:</strong> ${new Date(session.endDate).toLocaleDateString('fr-FR')}</p>` : ''}
+                    </div>
                 `;
                 sessionInfo.style.display = 'block';
-                sessionCodeInput.style.display = 'none';
+                sessionCodeGroup.style.display = 'none';
                 joinSessionBtn.style.display = 'none';
             }
 
@@ -119,6 +148,10 @@
             }
 
             function leaveSession() {
+                if (!confirm('Êtes-vous sûr de vouloir quitter cette session ?')) {
+                    return;
+                }
+                
                 fetch('/api/game-session/leave', {
                     method: 'POST'
                 })
@@ -129,7 +162,7 @@
                     } else {
                         showMessage('Session quittée avec succès', 'success');
                         sessionInfo.style.display = 'none';
-                        sessionCodeInput.style.display = 'block';
+                        sessionCodeGroup.style.display = 'block';
                         joinSessionBtn.style.display = 'inline-block';
                         sessionCodeInput.value = '';
                     }
@@ -141,93 +174,7 @@
             }
         });
     </script>
-
-    <style>
-        .session-form {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-
-        .session-info {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #28a745;
-            border-radius: 4px;
-            background-color: #d4edda;
-        }
-
-        .session-info h3 {
-            margin-top: 0;
-            color: #155724;
-        }
-
-        .message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
+        </div>
+    </div>
 </body>
 </html>

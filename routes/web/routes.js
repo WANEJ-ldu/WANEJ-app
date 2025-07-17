@@ -26,7 +26,20 @@ const authenticateWeb = async (req, res, next) => {
 };
 
 router.get('/', (req, res) => {
-    res.render('index');
+    // Vérifier si l'utilisateur est connecté
+    const authToken = req.cookies.authToken;
+    let user = null;
+    
+    if (authToken) {
+        try {
+            const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+            user = decoded;
+        } catch (error) {
+            // Token invalide, on ignore
+        }
+    }
+    
+    res.render('index', { user });
 });
 
 router.get('/login', (req, res) => {
@@ -117,19 +130,19 @@ router.get('/dashboard', authenticateWeb, async (req, res) => {
 });
 
 router.get('/team/create', authenticateWeb, (req, res) => {
-    res.render('team-create');
+    res.render('team-create', { user: req.user });
 });
 
 router.get('/team/join', authenticateWeb, (req, res) => {
-    res.render('team-join');
+    res.render('team-join', { user: req.user });
 });
 
 router.get('/session', authenticateWeb, (req, res) => {
-    res.render('session-join');
+    res.render('session-join', { user: req.user });
 });
 
 router.get('/leaderboard', authenticateWeb, (req, res) => {
-    res.render('leaderboard');
+    res.render('leaderboard', { user: req.user });
 });
 
 router.get('/logout', (req, res) => {

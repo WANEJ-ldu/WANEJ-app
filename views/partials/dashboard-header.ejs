@@ -1,0 +1,17 @@
+<header class="dashboard-header">
+    <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="logo-small">
+    <h1><%= title || 'Dashboard WANEJ' %></h1>
+    <div class="user-info">
+        <% if (showPoints && user && user.points !== undefined) { %>
+            <span class="points-badge">🏆 <%= user.points %> pts</span>
+        <% } %>
+        <% if (user) { %>
+            <span>Bienvenue, <%= user.username %></span>
+        <% } %>
+        <% if (backLink) { %>
+            <a href="<%= backLink.url %>" class="btn-link"><%= backLink.text %></a>
+        <% } else { %>
+            <a href="/logout" class="logout-btn">Déconnexion</a>
+        <% } %>
+    </div>
+</header>

@@ -7,39 +7,52 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <header>
-        <a href="/login" class="login-button">Se connecter</a>
-        <img src="/uploads/wanej-logo-html-css.png" alt="Logo WANEJ" class="wanej-logo">
-        <h1>WANEJ</h1>
-        <h2>Semaine du Numérique</h2>
-        <div class="header-intro">
-            <p>Bienvenue sur la page officielle de notre groupe pour la Semaine du Numérique !</p>
-            <p class="header-subtitle">Découverte, entraide et bonne humeur au rendez-vous 😊</p>
-        </div>
-        <!-- Icônes retirées pour un header plus épuré -->
-    </header>
+        <div class="dashboard-container">
+        <% if (user) { %>
+            <%- include('partials/dashboard-header', { 
+                title: 'WANEJ - Accueil', 
+                showPoints: true,
+                backLink: { url: '/dashboard', text: 'Dashboard' }
+            }) %>
+        <% } else { %>
+            <%- include('partials/dashboard-header', { 
+                title: 'WANEJ - Accueil', 
+                showPoints: false,
+                backLink: { url: '/login', text: 'Se connecter' }
+            }) %>
+        <% } %>
 
-    <section class="intro">
-        <h2>Qui sommes-nous ?</h2>
-        <p>
-            <b>WANEJ</b> est un groupe d'étudiants passionnés par le numérique, l'entraide et la découverte.<br>
-            À l'occasion de la <b>Semaine du Numérique</b>, nous avons conçu des <b>défis</b> et <b>activités</b> ludiques pour tous, même si vous n'avez jamais touché un ordinateur !
-        </p>
-        <img src="https://cdn.pixabay.com/photo/2017/01/31/13/14/computer-2025792_1280.png" alt="Découverte informatique" style="width:120px;margin-top:1em;">
-    </section>
+        <div class="<%= user ? 'dashboard-content' : 'index-content' %>">
+            <% if (!user) { %>
+                <%- include('partials/home-hero') %>
+            <% } %>
+            <section class="intro">
+                <h2>Qui sommes-nous ?</h2>
+                <p>
+                    <b>WANEJ</b> est un groupe d'étudiants passionnés par le numérique, l'entraide et la découverte.<br>
+                    À l'occasion de la <b>Semaine du Numérique</b>, nous avons conçu des <b>défis</b> et <b>activités</b> ludiques pour tous, même si vous n'avez jamais touché un ordinateur !
+                </p>
+            </section>
 
-    <section>
-        <h2 style="text-align:center;">Nos Défis & Activités</h2>
-        <div class="activities-cta">
-            <div class="cta-content">
-                <h3>🎯 Activités Interactives</h3>
-                <p>Participez à nos activités interactives et gagnez des points ! Des leçons progressives pour tous les niveaux.</p>
-                <a href="/activities" class="btn btn-primary">Commencer les activités</a>
-            </div>
-        </div>
+            <section>
+                <h2 style="text-align:center;">Nos Défis & Activités</h2>
+                <div class="activities-cta">
+                    <div class="cta-content">
+                        <h3>🎯 Activités Interactives</h3>
+                        <p>Participez à nos activités interactives et gagnez des points ! Des leçons progressives pour tous les niveaux.</p>
+                        <% if (user) { %>
+                            <% if (user.gameSession) { %>
+                                <a href="/activities" class="btn">Commencer les activités</a>
+                            <% } else { %>
+                                <a href="/session" class="btn">Rejoindre une session</a>
+                            <% } %>
+                        <% } else { %>
+                            <a href="/login" class="btn">Se connecter pour participer</a>
+                        <% } %>
+                    </div>
+                </div>
         <div class="defis">
             <div class="defi-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="Défi Souris">
                 <div class="defi-title">Défi Souris Magique 🖱️</div>
                 <div class="defi-desc">
                     Apprenez à manier la souris et le clavier à travers un parcours interactif : cliquer, glisser, double-cliquer...<br>
@@ -47,7 +60,6 @@
                 </div>
             </div>
             <div class="defi-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Défi Internet">
                 <div class="defi-title">Premiers Pas sur Internet 🌐</div>
                 <div class="defi-desc">
                     Découvrez comment naviguer sur Internet en toute sécurité.<br>
@@ -55,7 +67,6 @@
                 </div>
             </div>
             <div class="defi-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Défi Sécurité">
                 <div class="defi-title">Défi Sécurité Numérique 🔒</div>
                 <div class="defi-desc">
                     Apprenez à créer un mot de passe solide et à reconnaître les pièges courants.<br>
@@ -63,7 +74,6 @@
                 </div>
             </div>
             <div class="defi-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/167/167707.png" alt="Défi Création">
                 <div class="defi-title">Crée ta Première Page Web 💻</div>
                 <div class="defi-desc">
                     Initiez-vous au HTML en créant une mini-page personnalisée.<br>
@@ -71,7 +81,6 @@
                 </div>
             </div>
             <div class="defi-card">
-                <img src="https://www.nist.gov/sites/default/files/styles/960_x_960_limit/public/images/2018/11/06/cyber-questions-blogfeaturedimage718x330-recovered.png?itok=1MKJUrdF" alt="Défi Quiz">
                 <div class="defi-title">Quiz Numérique 🎲</div>
                 <div class="defi-desc">
                     Testez vos connaissances avec notre quiz interactif.<br>
@@ -81,27 +90,29 @@
         </div>
     </section>
 
-    <section class="team">
-        <h2>Notre équipe</h2>
-        <div class="team-photos">
-            <img src="/images/Alexis.jpg" alt="Alexis">
-            <img src="/images/Weimin.jpg" alt="Weimin">
-            <img src="https://elodie.gimenez.xyz/img/profile.png" alt="Elodie">
-            <img src="/images/Nathan.jpg" alt="Nathan">
-            <img src="/images/Jeanbon.jpg" alt="Jean">
-        </div>
-        <div class="team-names">
-            <span>Alexis</span>
-            <span>Weimin</span>
-            <span>Elodie</span>
-            <span>Nathan</span>
-            <span>Jean</span>
-        </div>
-        <p>Étudiants en BTS SIO, motivés à rendre le numérique accessible à tous !</p>
-    </section>
+            <section class="team">
+                <h2>Notre équipe</h2>
+                <div class="team-photos">
+                    <img src="/images/Alexis.jpg" alt="Alexis">
+                    <img src="/images/Weimin.jpg" alt="Weimin">
+                    <img src="https://elodie.gimenez.xyz/img/profile.png" alt="Elodie">
+                    <img src="/images/Nathan.jpg" alt="Nathan">
+                    <img src="/images/Jeanbon.jpg" alt="Jean">
+                </div>
+                <div class="team-names">
+                    <span>Alexis</span>
+                    <span>Weimin</span>
+                    <span>Elodie</span>
+                    <span>Nathan</span>
+                    <span>Jean</span>
+                </div>
+                <p>Étudiants en BTS SIO, motivés à rendre le numérique accessible à tous !</p>
+            </section>
 
-    <footer>
-        © 2025 WANEJ - Semaine du Numérique | Illustrations par Flaticon & Pixabay
-    </footer>
+            <footer>
+                © 2025 WANEJ - Semaine du Numérique
+            </footer>
+        </div>
+    </div>
 </body>
 </html>

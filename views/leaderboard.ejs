@@ -7,19 +7,19 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div class="container">
-        <header class="leaderboard-header">
-            <h1>🏆 Classement WANEJ</h1>
-            <div class="header-actions">
-                <a href="/dashboard" class="btn btn-outline">Retour au dashboard</a>
-            </div>
-        </header>
+    <div class="dashboard-container">
+        <%- include('partials/dashboard-header', { 
+            title: '🏆 Classement WANEJ', 
+            showPoints: true,
+            backLink: { url: '/dashboard', text: 'Retour au dashboard' }
+        }) %>
 
-        <div class="leaderboard-tabs">
-            <button class="tab-button active" data-tab="global">🌍 Classement Global</button>
-            <button class="tab-button" data-tab="current-session">🎮 Ma Session</button>
-            <button class="tab-button" data-tab="sessions">📊 Toutes les Sessions</button>
-        </div>
+        <div class="dashboard-content">
+            <div class="leaderboard-tabs">
+                <button class="tab-button active" data-tab="global">🌍 Classement Global</button>
+                <button class="tab-button" data-tab="current-session">🎮 Ma Session</button>
+                <button class="tab-button" data-tab="sessions">📊 Toutes les Sessions</button>
+            </div>
 
         <div id="global-tab" class="tab-content active">
             <div class="leaderboard-section">
@@ -268,5 +268,7 @@
             }
         });
     </script>
+        </div>
+    </div>
 </body>
 </html>

@@ -9,25 +9,33 @@
 <body>
     <div class="activity-player">
         <%- include('partials/dashboard-header', { 
-            title: 'Activité WANEJ', 
+            title: 'Lecteur d\'Activité', 
             showPoints: true,
             backLink: { url: '/activities', text: '← Activités' }
         }) %>
-        
-        <div class="activity-progress-header">
-            <div class="progress-info">
-                <span id="stepCounter">0/0</span>
-                <h1 id="activityTitle">Chargement...</h1>
+
+        <div class="activity-info-section">
+            <div class="activity-info-card">
+                <div class="activity-title-container">
+                    <h1 id="activityTitle">Chargement...</h1>
+                    <div class="activity-progress-info">
+                        <span class="step-label">Étape</span>
+                        <span id="stepCounter" class="step-counter">0/0</span>
+                    </div>
+                </div>
+                
+                <div class="activity-progress-bar">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressBar"></div>
+                        </div>
+                        <span class="progress-percentage" id="progressPercentage">0%</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="activity-content">
-            <div class="step-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressBar"></div>
-                </div>
-            </div>
-
             <div class="step-container" id="stepContainer">
                 <!-- Le contenu de l'étape sera chargé ici -->
             </div>
@@ -58,23 +66,41 @@
 
         async function loadActivity() {
             try {
+                console.log('Chargement de l\'activité:', activityId);
                 const response = await fetch(`/api/activities/${activityId}`);
                 const data = await response.json();
                 
+                console.log('Réponse API:', response.status, data);
+                
                 if (response.ok) {
                     currentActivity = data.activity;
-                    currentStepIndex = data.progress.currentStep;
+                    currentStepIndex = data.progress.currentStep || 0;
                     totalSteps = currentActivity.content.steps.length;
-                    currentPoints = data.progress.pointsEarned;
+                    currentPoints = data.progress.pointsEarned || 0;
+                    
+                    console.log('Données chargées:', {
+                        currentStepIndex,
+                        totalSteps,
+                        currentPoints,
+                        activityTitle: currentActivity.title
+                    });
+                    
+                    // Vérifier que currentStepIndex est dans les limites valides
+                    if (currentStepIndex >= totalSteps) {
+                        currentStepIndex = Math.max(0, totalSteps - 1);
+                        console.log('Index corrigé:', currentStepIndex);
+                    }
                     
                     document.getElementById('activityTitle').textContent = currentActivity.title;
                     updateProgressDisplay();
                     displayCurrentStep();
                 } else {
+                    console.error('Erreur API:', data);
                     showError(data.error || 'Erreur lors du chargement de l\'activité');
                 }
             } catch (error) {
-                showError('Erreur de connexion');
+                console.error('Erreur lors du chargement:', error);
+                showError('Erreur de connexion: ' + error.message);
             } finally {
                 document.getElementById('loadingSpinner').style.display = 'none';
             }
@@ -84,7 +110,8 @@
             const progress = (currentStepIndex / totalSteps) * 100;
             document.getElementById('progressBar').style.width = progress + '%';
             document.getElementById('stepCounter').textContent = `${currentStepIndex + 1}/${totalSteps}`;
-            document.getElementById('currentPoints').textContent = currentPoints;
+            document.getElementById('progressPercentage').textContent = Math.round(progress) + '%';
+            // Note: Les points sont maintenant affichés dans le dashboard header
         }
 
         function displayCurrentStep() {
@@ -122,7 +149,7 @@
         function displayLesson(step, container) {
             container.innerHTML = `
                 <div class="lesson-content">
-                    <h2>${escapeHtml(step.title)}</h2>
+                    <h2>${step.title}</h2>
                     <div class="lesson-text">${step.content.replace(/\n/g, '<br>')}</div>
                 </div>
             `;
@@ -135,14 +162,14 @@
             const optionsHtml = step.options.map((option, index) => `
                 <label class="option-label">
                     <input type="radio" name="answer" value="${index}">
-                    <span class="option-text">${escapeHtml(option)}</span>
+                    <span class="option-text">${option}</span>
                 </label>
             `).join('');
 
             container.innerHTML = `
                 <div class="question-content">
-                    <h2>${escapeHtml(step.title)}</h2>
-                    <p class="question-text">${escapeHtml(step.question)}</p>
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
                     <div class="options-container">
                         ${optionsHtml}
                     </div>
@@ -156,10 +183,10 @@
         function displayTextInput(step, container) {
             container.innerHTML = `
                 <div class="question-content">
-                    <h2>${escapeHtml(step.title)}</h2>
-                    <p class="question-text">${escapeHtml(step.question)}</p>
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
                     <div class="input-container">
-                        <input type="text" id="textAnswer" placeholder="${escapeHtml(step.placeholder || 'Votre réponse')}" class="text-input">
+                        <input type="text" id="textAnswer" placeholder="${step.placeholder || 'Votre réponse'}" class="text-input">
                     </div>
                 </div>
             `;
@@ -171,15 +198,15 @@
         function displayMultipleInput(step, container) {
             const inputsHtml = step.inputs.map((input, index) => `
                 <div class="input-group">
-                    <p>${escapeHtml(input.text)}</p>
+                    <p>${input.text}</p>
                     <input type="text" data-index="${index}" class="multiple-input" placeholder="Votre réponse">
                 </div>
             `).join('');
 
             container.innerHTML = `
                 <div class="question-content">
-                    <h2>${escapeHtml(step.title)}</h2>
-                    <p class="question-text">${escapeHtml(step.question)}</p>
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
                     <div class="inputs-container">
                         ${inputsHtml}
                     </div>
@@ -193,21 +220,21 @@
         function displayDragDrop(step, container) {
             const itemsHtml = step.items.map(item => `
                 <div class="drag-item" draggable="true" data-id="${item.id}">
-                    ${escapeHtml(item.text)}
+                    ${item.text}
                 </div>
             `).join('');
 
             const categoriesHtml = step.categories.map(category => `
                 <div class="drop-zone" data-category="${category}">
-                    <h4>${escapeHtml(category)}</h4>
+                    <h4>${category}</h4>
                     <div class="drop-area"></div>
                 </div>
             `).join('');
 
             container.innerHTML = `
                 <div class="question-content">
-                    <h2>${escapeHtml(step.title)}</h2>
-                    <p class="question-text">${escapeHtml(step.question)}</p>
+                    <h2>${step.title}</h2>
+                    <p class="question-text">${step.question}</p>
                     <div class="drag-drop-container">
                         <div class="items-container">
                             ${itemsHtml}
@@ -327,7 +354,7 @@
                         <h3>${result.isCorrect ? '✅ Correct !' : '❌ Incorrect'}</h3>
                         ${result.pointsEarned > 0 ? `<span class="points-earned">+${result.pointsEarned} pts</span>` : ''}
                     </div>
-                    ${result.feedback ? `<p class="feedback-text">${escapeHtml(result.feedback)}</p>` : ''}
+                    ${result.feedback ? `<p class="feedback-text">${result.feedback}</p>` : ''}
                     <button class="btn btn-primary" onclick="proceedToNext(${result.nextStep}, ${result.isCompleted})">
                         ${result.isCompleted ? 'Terminer' : 'Continuer'}
                     </button>
@@ -367,7 +394,7 @@
             container.innerHTML = `
                 <div class="completion-screen">
                     <h2>🎉 Félicitations !</h2>
-                    <p>Vous avez terminé l'activité "${escapeHtml(currentActivity.title)}"</p>
+                    <p>Vous avez terminé l'activité "${currentActivity.title}"</p>
                     <div class="completion-stats">
                         <div class="stat">
                             <span class="stat-value">${currentPoints}</span>
@@ -394,17 +421,10 @@
             container.innerHTML = `
                 <div class="error-message">
                     <h3>Erreur</h3>
-                    <p>${escapeHtml(message)}</p>
+                    <p>${message}</p>
                     <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
                 </div>
             `;
-        }
-
-        // Fonction pour échapper les balises HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         // Charger l'activité au démarrage

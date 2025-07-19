@@ -158,10 +158,19 @@
         }
 
         function displayLesson(step, container) {
+            // Échapper les caractères HTML pour éviter l'interprétation des balises
+            const escapedContent = step.content
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/\n/g, '<br>');
+            
             container.innerHTML = `
                 <div class="lesson-content">
                     <h2>${step.title}</h2>
-                    <div class="lesson-text">${step.content.replace(/\n/g, '<br>')}</div>
+                    <div class="lesson-text">${escapedContent}</div>
                 </div>
             `;
             
@@ -170,17 +179,35 @@
         }
 
         function displayMultipleChoice(step, container) {
-            const optionsHtml = step.options.map((option, index) => `
-                <label class="option-label">
-                    <input type="radio" name="answer" value="${index}">
-                    <span class="option-text">${option}</span>
-                </label>
-            `).join('');
+            // Échapper le HTML dans les options
+            const optionsHtml = step.options.map((option, index) => {
+                const escapedOption = option
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+                
+                return `
+                    <label class="option-label">
+                        <input type="radio" name="answer" value="${index}">
+                        <span class="option-text">${escapedOption}</span>
+                    </label>
+                `;
+            }).join('');
+
+            // Échapper le HTML dans la question
+            const escapedQuestion = step.question
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
 
             container.innerHTML = `
                 <div class="question-content">
                     <h2>${step.title}</h2>
-                    <p class="question-text">${step.question}</p>
+                    <p class="question-text">${escapedQuestion}</p>
                     <div class="options-container">
                         ${optionsHtml}
                     </div>
@@ -192,12 +219,28 @@
         }
 
         function displayTextInput(step, container) {
+            // Échapper le HTML dans la question
+            const escapedQuestion = step.question
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            // Échapper le HTML dans le placeholder
+            const escapedPlaceholder = (step.placeholder || 'Votre réponse')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
             container.innerHTML = `
                 <div class="question-content">
                     <h2>${step.title}</h2>
-                    <p class="question-text">${step.question}</p>
+                    <p class="question-text">${escapedQuestion}</p>
                     <div class="input-container">
-                        <input type="text" id="textAnswer" placeholder="${step.placeholder || 'Votre réponse'}" class="text-input">
+                        <input type="text" id="textAnswer" placeholder="${escapedPlaceholder}" class="text-input">
                     </div>
                 </div>
             `;
@@ -207,17 +250,34 @@
         }
 
         function displayMultipleInput(step, container) {
-            const inputsHtml = step.inputs.map((input, index) => `
-                <div class="input-group">
-                    <p>${input.text}</p>
-                    <input type="text" data-index="${index}" class="multiple-input" placeholder="Votre réponse">
-                </div>
-            `).join('');
+            const inputsHtml = step.inputs.map((input, index) => {
+                const escapedText = input.text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+                
+                return `
+                    <div class="input-group">
+                        <p>${escapedText}</p>
+                        <input type="text" data-index="${index}" class="multiple-input" placeholder="Votre réponse">
+                    </div>
+                `;
+            }).join('');
+
+            // Échapper le HTML dans la question
+            const escapedQuestion = step.question
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
 
             container.innerHTML = `
                 <div class="question-content">
                     <h2>${step.title}</h2>
-                    <p class="question-text">${step.question}</p>
+                    <p class="question-text">${escapedQuestion}</p>
                     <div class="inputs-container">
                         ${inputsHtml}
                     </div>
@@ -229,23 +289,49 @@
         }
 
         function displayDragDrop(step, container) {
-            const itemsHtml = step.items.map(item => `
-                <div class="drag-item" draggable="true" data-id="${item.id}">
-                    ${item.text}
-                </div>
-            `).join('');
+            const itemsHtml = step.items.map(item => {
+                const escapedText = item.text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+                
+                return `
+                    <div class="drag-item" draggable="true" data-id="${item.id}">
+                        ${escapedText}
+                    </div>
+                `;
+            }).join('');
 
-            const categoriesHtml = step.categories.map(category => `
-                <div class="drop-zone" data-category="${category}">
-                    <h4>${category}</h4>
-                    <div class="drop-area"></div>
-                </div>
-            `).join('');
+            const categoriesHtml = step.categories.map(category => {
+                const escapedCategory = category
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+                
+                return `
+                    <div class="drop-zone" data-category="${category}">
+                        <h4>${escapedCategory}</h4>
+                        <div class="drop-area"></div>
+                    </div>
+                `;
+            }).join('');
+
+            // Échapper le HTML dans la question
+            const escapedQuestion = step.question
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
 
             container.innerHTML = `
                 <div class="question-content">
                     <h2>${step.title}</h2>
-                    <p class="question-text">${step.question}</p>
+                    <p class="question-text">${escapedQuestion}</p>
                     <div class="drag-drop-container">
                         <div class="items-container">
                             ${itemsHtml}
@@ -359,13 +445,21 @@
         function showFeedback(result) {
             const container = document.getElementById('stepContainer');
             
+            // Échapper le HTML dans le feedback
+            const escapedFeedback = result.feedback ? result.feedback
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;') : '';
+            
             const feedbackHtml = `
                 <div class="feedback-container ${result.isCorrect ? 'correct' : 'incorrect'}">
                     <div class="feedback-header">
                         <h3>${result.isCorrect ? '✅ Correct !' : '❌ Incorrect'}</h3>
                         ${result.pointsEarned > 0 ? `<span class="points-earned">+${result.pointsEarned} pts</span>` : ''}
                     </div>
-                    ${result.feedback ? `<p class="feedback-text">${result.feedback}</p>` : ''}
+                    ${result.feedback ? `<p class="feedback-text">${escapedFeedback}</p>` : ''}
                     <button class="btn btn-primary" onclick="proceedToNext(${result.currentStep}, ${result.isCompleted})">
                         ${result.isCompleted ? 'Terminer' : 'Continuer'}
                     </button>

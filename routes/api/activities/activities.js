@@ -347,7 +347,7 @@ router.post('/:id/submit', authenticate, requireGameSession, [
                 let correctMappings = 0;
                 
                 currentStepData.items.forEach(item => {
-                    if (userMapping[item.id] === item.category) {
+                    if (userMapping[item.id] === currentStepData.correctAnswers[item.id]) {
                         correctMappings++;
                     }
                 });

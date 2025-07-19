@@ -3,12 +3,16 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { authenticate } = require('../../../middleware/authenticate');
 const { requireGameSession } = require('../../../middleware/requireGameSession');
-const { User, Activity, UserActivity } = require('../../../models');
+const { User, Activity, UserActivity, TeamActivity } = require('../../../models');
 const { Op } = require('sequelize');
 
 // Obtenir toutes les activités disponibles
 router.get('/', authenticate, requireGameSession, async (req, res) => {
     try {
+        if (!req.user.teamId) {
+            return res.status(400).json({ error: 'Vous devez faire partie d\'une équipe pour accéder aux activités' });
+        }
+
         const activities = await Activity.findAll({
             where: { isActive: true },
             order: [['order', 'ASC'], ['createdAt', 'ASC']],
@@ -21,6 +25,23 @@ router.get('/', authenticate, requireGameSession, async (req, res) => {
             attributes: ['activityId', 'currentStep', 'isCompleted', 'pointsEarned']
         });
 
+        // Récupérer l'état des activités d'équipe
+        const teamActivities = await TeamActivity.findAll({
+            where: { teamId: req.user.teamId },
+            include: [
+                {
+                    model: User,
+                    as: 'currentUser',
+                    attributes: ['id', 'username']
+                },
+                {
+                    model: User,
+                    as: 'completedByUser',
+                    attributes: ['id', 'username']
+                }
+            ]
+        });
+
         // Mapper les progrès par activité
         const progressMap = {};
         userActivities.forEach(ua => {
@@ -31,15 +52,41 @@ router.get('/', authenticate, requireGameSession, async (req, res) => {
             };
         });
 
-        // Ajouter les progrès aux activités
-        const activitiesWithProgress = activities.map(activity => ({
-            ...activity.toJSON(),
-            progress: progressMap[activity.id] || {
+        // Mapper l'état d'équipe par activité
+        const teamStateMap = {};
+        teamActivities.forEach(ta => {
+            teamStateMap[ta.activityId] = {
+                isLocked: ta.isLocked,
+                isCompleted: ta.isCompleted,
+                currentUser: ta.currentUser,
+                completedBy: ta.completedByUser,
+                pointsEarned: ta.pointsEarned
+            };
+        });
+
+        // Ajouter les progrès et l'état d'équipe aux activités
+        const activitiesWithProgress = activities.map(activity => {
+            const teamState = teamStateMap[activity.id] || {
+                isLocked: false,
+                isCompleted: false,
+                currentUser: null,
+                completedBy: null,
+                pointsEarned: 0
+            };
+
+            const userProgress = progressMap[activity.id] || {
                 currentStep: 0,
                 isCompleted: false,
                 pointsEarned: 0
-            }
-        }));
+            };
+
+            return {
+                ...activity.toJSON(),
+                progress: userProgress,
+                teamState: teamState,
+                canStart: !teamState.isCompleted && (!teamState.isLocked || teamState.currentUser?.id === req.user.id)
+            };
+        });
 
         res.json({ activities: activitiesWithProgress });
     } catch (error) {
@@ -48,12 +95,44 @@ router.get('/', authenticate, requireGameSession, async (req, res) => {
     }
 });
 
-// Obtenir une activité spécifique avec son contenu
+// Obtenir une activité spécifique avec son contenu (sans les réponses)
 router.get('/:id', authenticate, requireGameSession, async (req, res) => {
     try {
+        if (!req.user.teamId) {
+            return res.status(400).json({ error: 'Vous devez faire partie d\'une équipe pour accéder aux activités' });
+        }
+
         const activity = await Activity.findByPk(req.params.id);
         if (!activity) {
             return res.status(404).json({ error: 'Activité non trouvée' });
+        }
+
+        // Vérifier l'état de l'activité pour l'équipe
+        let teamActivity = await TeamActivity.findOne({
+            where: { teamId: req.user.teamId, activityId: activity.id },
+            include: [
+                {
+                    model: User,
+                    as: 'currentUser',
+                    attributes: ['id', 'username']
+                }
+            ]
+        });
+
+        // Si l'activité est terminée par l'équipe, interdire l'accès
+        if (teamActivity && teamActivity.isCompleted) {
+            return res.status(403).json({ 
+                error: 'Cette activité a déjà été terminée par votre équipe',
+                completedBy: teamActivity.completedByUser?.username 
+            });
+        }
+
+        // Si l'activité est verrouillée par un autre membre de l'équipe
+        if (teamActivity && teamActivity.isLocked && teamActivity.currentUserId !== req.user.id) {
+            return res.status(423).json({ 
+                error: `Cette activité est actuellement utilisée par ${teamActivity.currentUser.username}`,
+                currentUser: teamActivity.currentUser.username
+            });
         }
 
         // Récupérer ou créer le progrès utilisateur
@@ -70,6 +149,61 @@ router.get('/:id', authenticate, requireGameSession, async (req, res) => {
             });
         }
 
+        // Verrouiller l'activité pour l'équipe si pas encore fait
+        if (!teamActivity) {
+            teamActivity = await TeamActivity.create({
+                teamId: req.user.teamId,
+                activityId: activity.id,
+                isLocked: true,
+                currentUserId: req.user.id
+            });
+        } else if (!teamActivity.isLocked) {
+            await teamActivity.update({
+                isLocked: true,
+                currentUserId: req.user.id
+            });
+        }
+
+        // Nettoyer le contenu pour supprimer les réponses
+        const cleanContent = {
+            ...activity.content,
+            steps: activity.content.steps.map(step => {
+                const cleanStep = { ...step };
+                
+                // Supprimer les réponses selon le type d'étape
+                if (step.type === 'multiple_choice') {
+                    delete cleanStep.correctAnswer;
+                    delete cleanStep.explanation;
+                } else if (step.type === 'text_input') {
+                    delete cleanStep.correctAnswers;
+                    delete cleanStep.explanation;
+                } else if (step.type === 'multiple_input') {
+                    if (cleanStep.inputs) {
+                        cleanStep.inputs = cleanStep.inputs.map(input => {
+                            const cleanInput = { ...input };
+                            delete cleanInput.correctAnswers;
+                            return cleanInput;
+                        });
+                    }
+                    delete cleanStep.explanation;
+                } else if (step.type === 'drag_drop') {
+                    if (cleanStep.items) {
+                        cleanStep.items = cleanStep.items.map(item => {
+                            const cleanItem = { ...item };
+                            delete cleanItem.category;
+                            return cleanItem;
+                        });
+                    }
+                    delete cleanStep.explanation;
+                }
+                
+                // Supprimer les points pour éviter la triche
+                delete cleanStep.points;
+                
+                return cleanStep;
+            })
+        };
+
         res.json({
             activity: {
                 id: activity.id,
@@ -77,7 +211,7 @@ router.get('/:id', authenticate, requireGameSession, async (req, res) => {
                 description: activity.description,
                 category: activity.category,
                 difficulty: activity.difficulty,
-                content: activity.content,
+                content: cleanContent,
                 maxPoints: activity.maxPoints
             },
             progress: {
@@ -93,35 +227,51 @@ router.get('/:id', authenticate, requireGameSession, async (req, res) => {
     }
 });
 
-// Soumettre une réponse à une étape
+// Route de soumission (utilise l'étape envoyée par le frontend)
 router.post('/:id/submit', authenticate, requireGameSession, [
     body('step').isInt({ min: 0 }).withMessage('L\'étape doit être un nombre positif'),
     body('answer').optional()
 ], async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
     try {
+        if (!req.user.teamId) {
+            return res.status(400).json({ error: 'Vous devez faire partie d\'une équipe' });
+        }
+
+        // Récupérer l'étape actuelle de l'utilisateur
+        const userActivity = await UserActivity.findOne({
+            where: { userId: req.user.id, activityId: req.params.id }
+        });
+
+        if (!userActivity) {
+            return res.status(404).json({ error: 'Progrès utilisateur non trouvé' });
+        }
+
+        // Valider avec l'étape envoyée par le frontend
         const { step, answer } = req.body;
+        
+        // Vérifier que l'étape envoyée est cohérente avec le progrès de l'utilisateur
+        if (step !== userActivity.currentStep) {
+            return res.status(400).json({ 
+                error: `Étape incohérente. Vous devriez être à l\'étape ${userActivity.currentStep}, mais vous tentez de soumettre l\'étape ${step}.`
+            });
+        }
         
         const activity = await Activity.findByPk(req.params.id);
         if (!activity) {
             return res.status(404).json({ error: 'Activité non trouvée' });
         }
 
-        let userActivity = await UserActivity.findOne({
-            where: { userId: req.user.id, activityId: activity.id }
+        // Vérifier l'état de l'équipe
+        const teamActivity = await TeamActivity.findOne({
+            where: { teamId: req.user.teamId, activityId: activity.id }
         });
 
-        if (!userActivity) {
-            userActivity = await UserActivity.create({
-                userId: req.user.id,
-                activityId: activity.id,
-                currentStep: 0,
-                pointsEarned: 0
-            });
+        if (!teamActivity || teamActivity.currentUserId !== req.user.id) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à faire cette activité' });
+        }
+
+        if (teamActivity.isCompleted) {
+            return res.status(403).json({ error: 'Cette activité a déjà été terminée par votre équipe' });
         }
 
         // Vérifier que l'étape est valide
@@ -138,7 +288,6 @@ router.post('/:id/submit', authenticate, requireGameSession, [
         // Traitement selon le type d'étape
         switch (currentStepData.type) {
             case 'lesson':
-                // Les leçons sont toujours "correctes"
                 isCorrect = true;
                 pointsEarned = currentStepData.points || 0;
                 break;
@@ -211,27 +360,36 @@ router.post('/:id/submit', authenticate, requireGameSession, [
                 break;
         }
 
-        // Enregistrer la tentative
+        // Enregistrer la tentative avec logique anti-triche
         const attempts = userActivity.attempts || [];
+        const existingCorrectAttempt = attempts.find(a => a.step === step && a.isCorrect);
+        
+        // Ajouter la nouvelle tentative
         attempts.push({
             step,
             answer,
             isCorrect,
-            pointsEarned,
+            pointsEarned: 0, // On calculera les points après
             timestamp: new Date()
         });
 
-        // Mettre à jour les points de l'utilisateur seulement si c'est correct et premier essai
-        if (isCorrect && !attempts.some(a => a.step === step && a.isCorrect)) {
+        // Calculer les points : seulement si c'est correct ET si c'est la première tentative correcte
+        let actualPointsEarned = 0;
+        if (isCorrect && !existingCorrectAttempt) {
+            actualPointsEarned = pointsEarned;
+            // Mettre à jour les points de l'utilisateur
             await User.increment('points', { 
                 by: pointsEarned, 
                 where: { id: req.user.id } 
             });
+            
+            // Mettre à jour les points dans la tentative
+            attempts[attempts.length - 1].pointsEarned = pointsEarned;
         }
 
         // Mettre à jour le progrès
         const newCurrentStep = isCorrect ? Math.max(userActivity.currentStep, step + 1) : userActivity.currentStep;
-        const newPointsEarned = userActivity.pointsEarned + (isCorrect ? pointsEarned : 0);
+        const newPointsEarned = userActivity.pointsEarned + actualPointsEarned;
         const isCompleted = newCurrentStep >= steps.length;
 
         await userActivity.update({
@@ -242,18 +400,148 @@ router.post('/:id/submit', authenticate, requireGameSession, [
             completedAt: isCompleted ? new Date() : null
         });
 
+        // Si l'activité est terminée, mettre à jour l'état de l'équipe
+        if (isCompleted && isCorrect) {
+            await teamActivity.update({
+                isCompleted: true,
+                isLocked: false,
+                completedBy: req.user.id,
+                completedAt: new Date(),
+                pointsEarned: newPointsEarned
+            });
+        }
+
         res.json({
             success: true,
             isCorrect,
-            pointsEarned,
+            pointsEarned: actualPointsEarned,
+            totalPoints: newPointsEarned,
             feedback,
-            nextStep: isCorrect ? step + 1 : step,
+            currentStep: newCurrentStep,
             isCompleted: isCompleted && isCorrect
         });
 
     } catch (error) {
-        console.error('Erreur soumission réponse:', error);
-        res.status(500).json({ error: 'Erreur lors de la soumission de la réponse' });
+        console.error('Erreur soumission:', error);
+        res.status(500).json({ error: 'Erreur lors de la soumission' });
+    }
+});
+
+// Libérer une activité (abandon)
+router.post('/:id/release', authenticate, requireGameSession, async (req, res) => {
+    try {
+        if (!req.user.teamId) {
+            return res.status(400).json({ error: 'Vous devez faire partie d\'une équipe' });
+        }
+
+        const teamActivity = await TeamActivity.findOne({
+            where: { 
+                teamId: req.user.teamId, 
+                activityId: req.params.id,
+                currentUserId: req.user.id
+            }
+        });
+
+        if (!teamActivity) {
+            return res.status(404).json({ error: 'Activité non trouvée ou non verrouillée par vous' });
+        }
+
+        if (teamActivity.isCompleted) {
+            return res.status(400).json({ error: 'Cette activité est déjà terminée' });
+        }
+
+        await teamActivity.update({
+            isLocked: false,
+            currentUserId: null
+        });
+
+        res.json({ success: true, message: 'Activité libérée avec succès' });
+
+    } catch (error) {
+        console.error('Erreur libération activité:', error);
+        res.status(500).json({ error: 'Erreur lors de la libération de l\'activité' });
+    }
+});
+
+// Route pour avancer sur les étapes lesson
+router.post('/:id/next', authenticate, requireGameSession, async (req, res) => {
+    try {
+        if (!req.user.teamId) {
+            return res.status(400).json({ error: 'Vous devez faire partie d\'une équipe' });
+        }
+
+        const userActivity = await UserActivity.findOne({
+            where: { userId: req.user.id, activityId: req.params.id }
+        });
+
+        if (!userActivity) {
+            return res.status(404).json({ error: 'Progrès utilisateur non trouvé' });
+        }
+
+        const activity = await Activity.findByPk(req.params.id);
+        if (!activity) {
+            return res.status(404).json({ error: 'Activité non trouvée' });
+        }
+
+        // Vérifier l'état de l'équipe
+        const teamActivity = await TeamActivity.findOne({
+            where: { teamId: req.user.teamId, activityId: activity.id }
+        });
+
+        if (!teamActivity || teamActivity.currentUserId !== req.user.id) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à faire cette activité' });
+        }
+
+        if (teamActivity.isCompleted) {
+            return res.status(403).json({ error: 'Cette activité a déjà été terminée par votre équipe' });
+        }
+
+        const steps = activity.content.steps;
+        const currentStep = userActivity.currentStep;
+
+        // Vérifier que l'étape actuelle est une lesson
+        if (currentStep >= steps.length) {
+            return res.status(400).json({ error: 'Étape invalide' });
+        }
+
+        const currentStepData = steps[currentStep];
+        if (currentStepData.type !== 'lesson') {
+            return res.status(400).json({ error: 'Cette étape nécessite une soumission via /submit' });
+        }
+
+        // Avancer à l'étape suivante
+        const newCurrentStep = currentStep + 1;
+        const pointsEarned = currentStepData.points || 0;
+        
+        await userActivity.update({
+            currentStep: newCurrentStep,
+            pointsEarned: userActivity.pointsEarned + pointsEarned
+        });
+
+        // Vérifier si l'activité est terminée
+        const isCompleted = newCurrentStep >= steps.length;
+        
+        if (isCompleted) {
+            await userActivity.update({ isCompleted: true });
+            await teamActivity.update({
+                isCompleted: true,
+                completedByUserId: req.user.id,
+                isLocked: false,
+                currentUserId: null
+            });
+        }
+
+        res.json({
+            success: true,
+            currentStep: newCurrentStep,
+            pointsEarned: pointsEarned,
+            totalPoints: userActivity.pointsEarned + pointsEarned,
+            isCompleted: isCompleted
+        });
+
+    } catch (error) {
+        console.error('Erreur avancement étape:', error);
+        res.status(500).json({ error: 'Erreur lors de l\'avancement' });
     }
 });
 

@@ -47,6 +47,9 @@
                 <button id="submitButton" class="btn btn-primary" onclick="submitAnswer()" style="display: none;">
                     Valider
                 </button>
+                <button id="releaseButton" class="btn btn-secondary" onclick="releaseActivity()" style="margin-left: 10px;">
+                    Abandonner
+                </button>
             </div>
         </div>
     </div>
@@ -96,7 +99,15 @@
                     displayCurrentStep();
                 } else {
                     console.error('Erreur API:', data);
-                    showError(data.error || 'Erreur lors du chargement de l\'activité');
+                    
+                    // Gérer les erreurs spécifiques
+                    if (response.status === 403) {
+                        showError('Cette activité a déjà été terminée par votre équipe.');
+                    } else if (response.status === 423) {
+                        showError(data.error || 'Cette activité est actuellement utilisée par un autre membre de votre équipe.');
+                    } else {
+                        showError(data.error || 'Erreur lors du chargement de l\'activité');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement:', error);
@@ -355,7 +366,7 @@
                         ${result.pointsEarned > 0 ? `<span class="points-earned">+${result.pointsEarned} pts</span>` : ''}
                     </div>
                     ${result.feedback ? `<p class="feedback-text">${result.feedback}</p>` : ''}
-                    <button class="btn btn-primary" onclick="proceedToNext(${result.nextStep}, ${result.isCompleted})">
+                    <button class="btn btn-primary" onclick="proceedToNext(${result.currentStep}, ${result.isCompleted})">
                         ${result.isCompleted ? 'Terminer' : 'Continuer'}
                     </button>
                 </div>
@@ -363,29 +374,51 @@
             
             container.innerHTML = feedbackHtml;
             
-            if (result.pointsEarned > 0) {
+            // Mettre à jour les points locaux avec la valeur totale du serveur
+            if (result.totalPoints !== undefined) {
+                currentPoints = result.totalPoints;
+            } else if (result.pointsEarned > 0) {
                 currentPoints += result.pointsEarned;
-                updateProgressDisplay();
             }
+            updateProgressDisplay();
         }
 
-        function proceedToNext(nextStep, isCompleted) {
+        function proceedToNext(newCurrentStep, isCompleted) {
             if (isCompleted) {
                 showCompletionScreen();
             } else {
-                currentStepIndex = nextStep;
+                // newCurrentStep est l'étape où l'utilisateur devrait être maintenant
+                currentStepIndex = newCurrentStep;
                 updateProgressDisplay();
                 displayCurrentStep();
             }
         }
 
-        function nextStep() {
-            if (currentStepIndex < totalSteps - 1) {
-                currentStepIndex++;
-                updateProgressDisplay();
-                displayCurrentStep();
-            } else {
-                showCompletionScreen();
+        async function nextStep() {
+            // Pour les étapes lesson, appeler l'API pour synchroniser avec le serveur
+            try {
+                const response = await fetch(`/api/activities/${activityId}/next`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Mettre à jour les points si des points ont été gagnés
+                    if (result.pointsEarned > 0) {
+                        currentPoints += result.pointsEarned;
+                    }
+                    
+                    // Procéder à l'étape suivante
+                    proceedToNext(result.currentStep, result.isCompleted);
+                } else {
+                    alert(result.error || 'Erreur lors de l\'avancement');
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
             }
         }
 
@@ -425,6 +458,32 @@
                     <button onclick="location.reload()" class="btn btn-primary">Réessayer</button>
                 </div>
             `;
+        }
+
+        async function releaseActivity() {
+            if (!confirm('Êtes-vous sûr de vouloir abandonner cette activité ? Cela la libérera pour les autres membres de votre équipe.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/activities/${activityId}/release`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Activité libérée avec succès');
+                    window.location.href = '/activities';
+                } else {
+                    alert(result.error || 'Erreur lors de la libération de l\'activité');
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
         }
 
         // Charger l'activité au démarrage

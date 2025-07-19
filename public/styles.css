@@ -1646,48 +1646,6 @@ footer {
     font-style: italic;
 }
 
-@media (max-width: 768px) {
-    .leaderboard-tabs {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .tab-button {
-        border-bottom: none;
-        border-left: 3px solid transparent;
-        text-align: left;
-    }
-    
-    .tab-button.active {
-        border-left-color: #3a86ff;
-        border-bottom-color: transparent;
-    }
-    
-    .sessions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .session-header {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: flex-start;
-    }
-    
-    .session-stats {
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-    
-    .leaderboard-table-content {
-        font-size: 0.9rem;
-    }
-    
-    .leaderboard-table-content th,
-    .leaderboard-table-content td {
-        padding: 0.5rem;
-    }
-}
-
 .activity-info-section {
     margin: 1rem 0;
     padding: 0 1rem;
@@ -1767,4 +1725,106 @@ footer {
     font-size: 0.9rem;
     min-width: 40px;
     text-align: right;
+}
+
+/* Styles pour les statuts d'activités d'équipe */
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin: 8px 0;
+    text-align: center;
+    border: 1px solid #c3e6cb;
+}
+
+.status-locked {
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin: 8px 0;
+    text-align: center;
+    border: 1px solid #ffeaa7;
+}
+
+.activity-card {
+    position: relative;
+}
+
+.activity-card:has(.status-completed) {
+    opacity: 0.8;
+    filter: grayscale(20%);
+}
+
+.activity-card:has(.status-locked) {
+    opacity: 0.7;
+    border: 2px dashed #ffeaa7;
+}
+
+.btn:disabled,
+.btn.btn-secondary[disabled] {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.btn:disabled:hover {
+    transform: none;
+    background: #6c757d;
+}
+
+/* Bouton d'abandon */
+#releaseButton {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+#releaseButton:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+
+/* Messages d'erreur améliorés */
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #f5c6cb;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.error-message h3 {
+    margin: 0 0 10px 0;
+    color: #721c24;
+}
+
+/* Amélioration de l'interface des activités */
+.activity-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.activity-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .activity-actions {
+        flex-direction: column;
+    }
+    
+    .activity-actions .btn {
+        width: 100%;
+    }
 }

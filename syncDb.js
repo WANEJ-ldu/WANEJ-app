@@ -3,7 +3,7 @@ const readline = require('readline');
 // Database
 const sequelize = require('./db');
 // Models
-const { User, Role, Session, Team } = require('./models/index');
+const { User, Role, Session, Team, TeamActivity } = require('./models/index');
 
 async function initRoles() {
 // !!! WARNING !!!

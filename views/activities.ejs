@@ -42,10 +42,28 @@
                 if (response.ok) {
                     displayActivities(data.activities);
                 } else {
-                    showError('Erreur lors du chargement des activités');
+                    // Gestion spécifique des erreurs
+                    let errorMessage = 'Erreur lors du chargement des activités';
+                    
+                    if (response.status === 400) {
+                        errorMessage = data.error || 'Vous devez faire partie d\'une équipe pour accéder aux activités';
+                    } else if (response.status === 401) {
+                        errorMessage = 'Vous devez être connecté pour accéder aux activités';
+                        // Rediriger vers la page de connexion après 3 secondes
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 3000);
+                    } else if (response.status === 403) {
+                        errorMessage = 'Vous n\'avez pas l\'autorisation d\'accéder aux activités';
+                    } else {
+                        errorMessage = data.error || errorMessage;
+                    }
+                    
+                    showError(errorMessage);
                 }
             } catch (error) {
-                showError('Erreur de connexion');
+                console.error('Erreur de connexion:', error);
+                showError('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
             } finally {
                 document.getElementById('loadingSpinner').style.display = 'none';
             }
@@ -107,6 +125,24 @@
                 'advanced': 'Avancé'
             };
 
+            // Déterminer le statut de l'activité
+            let statusInfo = '';
+            let actionButton = '';
+            
+            if (activity.teamState.isCompleted) {
+                const completedBy = activity.teamState.completedBy ? activity.teamState.completedBy.username : 'quelqu\'un';
+                statusInfo = `<div class="status-completed">✅ Terminé par ${completedBy}</div>`;
+                actionButton = '<button class="btn btn-secondary" disabled>Terminé</button>';
+            } else if (activity.teamState.isLocked && activity.teamState.currentUser && !activity.canStart) {
+                statusInfo = `<div class="status-locked">🔒 Utilisé par ${activity.teamState.currentUser.username}</div>`;
+                actionButton = '<button class="btn btn-secondary" disabled>Indisponible</button>';
+            } else if (activity.canStart) {
+                const buttonText = activity.progress.currentStep > 0 ? 'Continuer' : 'Commencer';
+                actionButton = `<button class="btn btn-primary" onclick="startActivity(${activity.id})">${buttonText}</button>`;
+            } else {
+                actionButton = '<button class="btn btn-secondary" disabled>Indisponible</button>';
+            }
+
             card.innerHTML = `
                 <div class="activity-icon">
                     ${categoryIcons[activity.category] || '📚'}
@@ -120,21 +156,19 @@
                         </span>
                         <span class="points-info">🏆 ${activity.maxPoints} pts</span>
                     </div>
+                    ${statusInfo}
                     <div class="progress-bar">
                         <div class="progress-fill" style="width: ${progressPercent}%"></div>
                     </div>
                     <div class="progress-text">
-                        ${activity.progress.isCompleted ? 
-                            `✅ Terminé (${activity.progress.pointsEarned}/${activity.maxPoints} pts)` : 
+                        ${activity.teamState.isCompleted ? 
+                            `Points d'équipe: ${activity.teamState.pointsEarned}/${activity.maxPoints}` : 
                             `Étape ${activity.progress.currentStep + 1}`
                         }
                     </div>
                 </div>
                 <div class="activity-actions">
-                    <button class="btn btn-primary" onclick="startActivity(${activity.id})">
-                        ${activity.progress.isCompleted ? 'Refaire' : 
-                          activity.progress.currentStep > 0 ? 'Continuer' : 'Commencer'}
-                    </button>
+                    ${actionButton}
                 </div>
             `;
 
